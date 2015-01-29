@@ -6,6 +6,5 @@
     </ann:Infobox>
     <br />
     <asp:Panel ID="Announcements" runat="server"></asp:Panel>
-    <ann:CafeteriaWeeklyMenuInfobox ID="CafeteriaMenu" runat="server" Title="Cafeteria Menu" />
     <ann:ClubListInfobox ID="ClubList" runat="server" Title="Clubs meeting today" DescriptionText="The following clubs will be meeting today at lunch. Click on the name for a short description of the club. If you need further information, please contact the responsible teacher." />
 </asp:Content>

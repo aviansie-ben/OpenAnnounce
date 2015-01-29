@@ -46,13 +46,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Control\AnnouncementInfobox.cs" />
-    <Compile Include="Control\CafeteriaWeeklyMenuInfobox.cs" />
     <Compile Include="Control\ClubInfobox.cs" />
     <Compile Include="Control\ClubListInfobox.cs" />
     <Compile Include="Control\Infobox.cs" />
     <Compile Include="Control\Navbar.cs" />
     <Compile Include="Data\Announcement.cs" />
-    <Compile Include="Data\CafeteriaMenu.cs" />
     <Compile Include="Data\Club.cs" />
     <Compile Include="Data\DatabaseManager.cs" />
     <Compile Include="Data\Scope.cs" />

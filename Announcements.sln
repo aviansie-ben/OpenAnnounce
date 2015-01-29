@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Announcements", "Announcements\Announcements.csproj", "{AA1D0E43-9BCE-45B6-8A14-D9A73E6C6D05}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnnouncementsLib", "AnnouncementsLib\AnnouncementsLib.csproj", "{BC9DFE23-55A7-4E4C-8C0D-21B68FC0614C}"

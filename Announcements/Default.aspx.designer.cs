@@ -31,15 +31,6 @@ namespace Announcements {
         protected global::System.Web.UI.WebControls.Panel Announcements;
         
         /// <summary>
-        /// CafeteriaMenu control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::Announcements.Control.CafeteriaWeeklyMenuInfobox CafeteriaMenu;
-        
-        /// <summary>
         /// ClubList control.
         /// </summary>
         /// <remarks>
