@@ -1,0 +1,192 @@
+﻿.announcement-table
+{
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+    .announcement-table td
+    {
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .announcement-table th, .announcement-table td
+    {
+        border: 1px solid #ddd;
+    }
+
+    .announcement-table th
+    {
+        background: #efefef;
+    }
+
+        .announcement-table th.check
+        {
+            width: 10px;
+        }
+
+        .announcement-table th.title
+        {
+            width: 25%;
+        }
+
+        .announcement-table th.creator
+        {
+            width: 20%;
+        }
+
+        .announcement-table th.runtime
+        {
+            width: 20%;
+        }
+
+        .announcement-table th.scope
+        {
+            width: 15%;
+        }
+
+        .announcement-table th.status
+        {
+            width: 10%;
+        }
+
+        .announcement-table th.action
+        {
+            width: 10%;
+        }
+
+.club-table
+{
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+    .club-table td
+    {
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .club-table th, .club-table td
+    {
+        border: 1px solid #ddd;
+    }
+
+    .club-table th
+    {
+        background: #efefef;
+    }
+        
+        .club-table th.check
+        {
+            width: 16px;
+        }
+
+        .club-table th.name
+        {
+            width: 25%;
+        }
+
+        .club-table th.creator
+        {
+            width: 25%;
+        }
+
+        .club-table th.weekday
+        {
+            width: 25%;
+        }
+
+        .club-table th.status
+        {
+            width: 15%;
+        }
+
+        .club-table th.action
+        {
+            width: 10%;
+        }
+
+.navbar-table
+{
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+    .navbar-table td
+    {
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .navbar-table th, .navbar-table td
+    {
+        border: 1px solid #ddd;
+    }
+
+    .navbar-table th
+    {
+        background: #efefef;
+    }
+
+        .navbar-table th.text
+        {
+            width: 35%;
+        }
+
+        .navbar-table th.url
+        {
+            width: 35%;
+        }
+
+        .navbar-table th.scope
+        {
+            width: 20%;
+        }
+
+        .navbar-table th.action
+        {
+            width: 10%;
+        }
+
+.cafeteria-view-table
+{
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+    max-width: 600px;
+    width: 100%;
+}
+
+    .cafeteria-view-table td
+    {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .cafeteria-view-table th, .cafeteria-view-table td
+    {
+        border: 1px solid #ddd;
+    }
+
+    .cafeteria-view-table th
+    {
+        background: #efefef;
+    }
+
+        .cafeteria-view-table th.day
+        {
+            width: 20%;
+        }
+
+        .cafeteria-view-table th.entree
+        {
+            width: 40%;
+        }
+
+        .cafeteria-view-table th.soup
+        {
+            width: 40%;
+        }

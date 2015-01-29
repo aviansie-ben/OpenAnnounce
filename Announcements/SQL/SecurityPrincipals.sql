@@ -1,0 +1,23 @@
+﻿CREATE TABLE [dbo].[SecurityPrincipals] (
+    [Id]                          INT          IDENTITY (1, 1) NOT NULL,
+    [Domain]                      CHAR (15)    NOT NULL,
+    [PrincipalName]               VARCHAR (50) NOT NULL,
+    [CanAccessBackend]            BIT          CONSTRAINT [DF_SecurityPrincipals_CanAccessBackend] DEFAULT ((0)) NOT NULL,
+    [CanViewAllAnnouncement]      BIT          CONSTRAINT [DF_SecurityPrincipals_CanViewAllAnnouncement] DEFAULT ((0)) NOT NULL,
+    [CanEditAllAnnouncement]      BIT          CONSTRAINT [DF_SecurityPrincipals_CanEditAllAnnouncement] DEFAULT ((0)) NOT NULL,
+    [CanAdvancedEditAnnouncement] BIT          CONSTRAINT [DF_SecurityPrincipals_CanAdvancedEditAnnouncement] DEFAULT ((0)) NOT NULL,
+    [CanSubmitAnnouncement]       BIT          CONSTRAINT [DF_SecurityPrincipals_CanSubmitAnnouncement] DEFAULT ((0)) NOT NULL,
+    [CanApproveAnnouncement]      BIT          CONSTRAINT [DF_SecurityPrincipals_CanApproveAnnouncement] DEFAULT ((0)) NOT NULL,
+    [CanHardDeleteAnnouncement]   BIT          CONSTRAINT [DF_SecurityPrincipals_CanHardDeleteAnnouncement] DEFAULT ((0)) NOT NULL,
+    [CanViewAllClub]              BIT          CONSTRAINT [DF_SecurityPrincipals_CanViewAllClub] DEFAULT ((0)) NOT NULL,
+    [CanEditAllClub]              BIT          CONSTRAINT [DF_SecurityPrincipals_CanEditAllClub] DEFAULT ((0)) NOT NULL,
+    [CanSubmitClub]               BIT          CONSTRAINT [DF_SecurityPrincipals_CanSubmitClub] DEFAULT ((0)) NOT NULL,
+    [CanApproveClub]              BIT          CONSTRAINT [DF_SecurityPrincipals_CanApproveClub] DEFAULT ((0)) NOT NULL,
+    [CanHardDeleteClub]           BIT          CONSTRAINT [DF_SecurityPrincipals_CanHardDeleteClub] DEFAULT ((0)) NOT NULL,
+    [CanEditNavbar]               BIT          CONSTRAINT [DF_SecurityPrincipals_CanEditNavbar] DEFAULT ((0)) NOT NULL,
+    [CanSetPermissions]           BIT          CONSTRAINT [DF_SecurityPrincipals_CanSetPermissions] DEFAULT ((0)) NOT NULL,
+    [CanEditProfiles]             BIT          NOT NULL,
+    [CanEditCafeteriaMenu]        BIT          NOT NULL,
+    [IsUser]                      BIT          CONSTRAINT [DF_SecurityPrincipals_IsUser] DEFAULT ((0)) NOT NULL,
+    CONSTRAINT [PK_SecurityPrincipals] PRIMARY KEY CLUSTERED ([Id] ASC)
+);

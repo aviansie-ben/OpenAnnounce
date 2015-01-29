@@ -1,0 +1,68 @@
+﻿.infobox-base
+{
+    border: 1px solid #eee;
+    margin: 0px 10px 5px 10px;
+}
+
+    .infobox-base a
+    {
+        color: #006c09;
+    }
+
+        .infobox-base a:hover
+        {
+            color: #00b20f;
+        }
+
+    .infobox-base h2
+    {
+        margin-right: 20px;
+        display: block;
+        border-bottom: 1px solid #88b68c;
+        font-family: 'Century Schoolbook';
+        font-size: 1.1em;
+    }
+
+.infobox-small-text
+{
+    font-size: 12px !important;
+}
+
+.infobox-title
+{
+    border-bottom: 1px solid #eee;
+    font-family: 'Century Schoolbook';
+    font-size: 1.3em;
+    padding: 2px 0px 2px 18px;
+    background: #f4f4f4;
+}
+
+.infobox-title-date
+{
+    float: right;
+    margin-right: 10px;
+    margin-top: 3px;
+    font-size: 0.6em;
+    font-family: Calibri;
+    color: #306535;
+}
+
+.infobox-body
+{
+    padding: 5px;
+    padding-left: 13px;
+    background: #f8f8f8;
+    font-family: Calibri;
+    font-size: 14px;
+}
+
+    .infobox-body p
+    {
+        margin-top: 9px;
+        margin-bottom: 0px;
+    }
+
+        .infobox-body p:first-child
+        {
+            margin-top: 2px;
+        }

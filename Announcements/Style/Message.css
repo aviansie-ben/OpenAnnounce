@@ -1,0 +1,21 @@
+﻿.message-base
+{
+    font-family: Calibri;
+    font-size: 0.9em;
+    padding: 3px 10px 3px 20px;
+    margin-bottom: 10px;
+}
+
+.message-error
+{
+    background: #ffa4a4;
+    border-top: 1px solid #c72b2b;
+    border-bottom: 1px solid #c72b2b;
+}
+
+.message-success
+{
+    background: #a4ffa6;
+    border-top: 1px solid #3bc72b;
+    border-bottom: 1px solid #3bc72b;
+}
