@@ -275,6 +275,13 @@
     <Content Include="Scripts\CKEditor\skins\moono\images\close.png" />
     <Content Include="Scripts\CKEditor\skins\moono\images\mini.png" />
     <Content Include="Scripts\CKEditor\styles.js" />
+    <Content Include="SQL\Announcements.sql" />
+    <Content Include="SQL\Clubs.sql" />
+    <Content Include="SQL\NavbarLinks.sql" />
+    <Content Include="SQL\Scopes.sql" />
+    <Content Include="SQL\SecurityPrincipals.sql" />
+    <Content Include="SQL\SecurityPrincipalScopes.sql" />
+    <Content Include="SQL\Users.sql" />
     <Content Include="Style\Infobox.css" />
     <Content Include="Style\Main.css" />
     <Content Include="Style\Message.css" />
