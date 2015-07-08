@@ -95,19 +95,16 @@ namespace Announcements.Data
                     {
                         return new UserProfile(manager, r);
                     }
-                    else if (create)
-                    {
-                        r.Close();
-                        UserProfile u = new UserProfile(manager, name);
-                        u.Insert();
-                        return u;
-                    }
-                    else
+                    else if (!create)
                     {
                         return null;
                     }
                 }
             }
+
+            UserProfile u = new UserProfile(manager, name);
+            u.Insert();
+            return u;
         }
     }
 }
