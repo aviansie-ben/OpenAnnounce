@@ -17,7 +17,7 @@
                 /
                 Format
                 Maximize|ShowBlocks
-                About" ContentsCss="../Style/Infobox.css" RemoveDialogTabs="link:advanced"></cke:CKEditorControl>
+                About" FormatTags="h1;h2;h3;pre" ContentsCss="../Style/Infobox.css" RemoveDialogTabs="link:advanced"></cke:CKEditorControl>
             <br />
             Teacher in charge (Username in form CBEORG\&lt;Username&gt;): <asp:TextBox ID="Teacher" runat="server" />
             <asp:LinkButton ID="EditProfile" runat="server" CssClass="linkbutton" OnClientClick="aspnetForm.target='_blank';" OnClick="EditProfile_Click" Text="Create/Edit Profile" /><br />

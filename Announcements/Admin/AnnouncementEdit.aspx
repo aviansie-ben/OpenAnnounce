@@ -16,7 +16,7 @@
                 /
                 Format
                 Maximize|ShowBlocks
-                About" ContentsCss="../Style/Infobox.css" RemoveDialogTabs="link:advanced"></cke:CKEditorControl>
+                About" FormatTags="h1;h2;h3;pre" ContentsCss="../Style/Infobox.css" RemoveDialogTabs="link:advanced"></cke:CKEditorControl>
             <br />Display from 
             <asp:TextBox ID="StartDate" runat="server" /><ajax:CalendarExtender ID="StartDateCalendar" runat="server" TargetControlID="StartDate" Format="dd/MM/yyyy" /> to 
             <asp:TextBox ID="EndDate" runat="server" /><ajax:CalendarExtender ID="EndDateCalendar" runat="server" TargetControlID="EndDate" Format="dd/MM/yyyy" /> for 
