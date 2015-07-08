@@ -21,7 +21,7 @@ namespace Announcements
             {
                 this.ErrorBox.Controls.Add(new Literal()
                 {
-                    Text = "<h2>Error details</h2>"
+                    Text = "<h1>Error details</h1>"
                 });
                 this.ErrorBox.Controls.Add(new TextBox()
                 {

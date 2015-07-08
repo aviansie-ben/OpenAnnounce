@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Control\AnnouncementInfobox.cs" />
+    <Compile Include="Control\AnnouncementTable.cs" />
     <Compile Include="Control\ClubInfobox.cs" />
     <Compile Include="Control\ClubListInfobox.cs" />
     <Compile Include="Control\Infobox.cs" />

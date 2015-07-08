@@ -10,7 +10,7 @@ using System.Web.UI.WebControls;
 
 namespace Announcements
 {
-    public partial class ClubList : System.Web.UI.Page
+    public partial class ClubList : AnnouncementsPage
     {
     }
 }

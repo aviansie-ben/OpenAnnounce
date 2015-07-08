@@ -12,10 +12,10 @@ namespace Announcements
         public UserProfile Profile { get; private set; }
         public CompiledSecurityInfo SecurityAccess { get; private set; }
 
-        public User(IPrincipal userPrincipal)
+        public User(DatabaseManager manager, IPrincipal userPrincipal)
         {
-            Profile = UserProfile.FromDatabase(userPrincipal.Identity.Name);
-            SecurityAccess = CompiledSecurityInfo.CompileAccessLevel(userPrincipal);
+            Profile = UserProfile.FromDatabase(manager, userPrincipal.Identity.Name);
+            SecurityAccess = CompiledSecurityInfo.CompileAccessLevel(manager, userPrincipal);
         }
     }
 }

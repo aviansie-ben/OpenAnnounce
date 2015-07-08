@@ -11,29 +11,27 @@ using Announcements.Data;
 
 namespace Announcements
 {
-    public partial class Default : System.Web.UI.Page
+    public partial class Default : AnnouncementsPage
     {
-        private User userInfo;
-
         protected void Page_Load(object sender, EventArgs e)
         {
-            userInfo = new User(User);
-
             string scopes = "";
-            foreach (int scope in userInfo.SecurityAccess.Scopes)
+            foreach (int scope in CurrentUser.SecurityAccess.Scopes)
             {
                 scopes += scope + ",";
             }
 
             scopes = scopes.Remove(scopes.Length - 1);
 
-            SqlCommand cmd = new SqlCommand("SELECT * FROM Announcements WHERE StartDate<=@today AND EndDate>=@today AND Status=1 AND (Scope IS NULL OR Scope IN (" + scopes + ")) ORDER BY IMPORTANCE DESC, StartDate DESC", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@today", DateTime.Today);
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("SELECT * FROM Announcements WHERE StartDate<=@today AND EndDate>=@today AND Status=1 AND (Scope IS NULL OR Scope IN (" + scopes + ")) ORDER BY IMPORTANCE DESC, StartDate DESC"))
             {
-                while (r.Read() && r.HasRows)
+                cmd.Parameters.AddWithValue("@today", DateTime.Today);
+                using (SqlDataReader r = cmd.ExecuteReader())
                 {
-                    Announcements.Controls.Add(new Control.AnnouncementInfobox(new Announcement(r)));
+                    while (r.Read() && r.HasRows)
+                    {
+                        Announcements.Controls.Add(new Control.AnnouncementInfobox(new Announcement(DatabaseManager.Current, r)));
+                    }
                 }
             }
         }

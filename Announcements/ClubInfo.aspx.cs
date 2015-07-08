@@ -9,7 +9,7 @@ using Announcements.Data;
 
 namespace Announcements
 {
-    public partial class ClubInfo : System.Web.UI.Page
+    public partial class ClubInfo : AnnouncementsPage
     {
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -29,24 +29,27 @@ namespace Announcements
                     Response.Redirect("Default.aspx", true);
                     return;
                 }
-                SqlCommand cmd = new SqlCommand("SELECT * FROM Clubs WHERE Id=@id AND Status=1", DatabaseManager.DatabaseConnection);
-                cmd.Parameters.AddWithValue("@id", id);
-                Club c = null;
-                using (SqlDataReader r = cmd.ExecuteReader())
+
+                using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("SELECT * FROM Clubs WHERE Id=@id AND Status=1"))
                 {
-                    if (r.HasRows)
+                    cmd.Parameters.AddWithValue("@id", id);
+                    Club c = null;
+                    using (SqlDataReader r = cmd.ExecuteReader())
                     {
-                        r.Read();
-                        c = new Club(r);
+                        if (r.HasRows)
+                        {
+                            r.Read();
+                            c = new Club(DatabaseManager.Current, r);
+                        }
                     }
-                }
-                if (c != null)
-                {
-                    ClubBox.Club = c;
-                }
-                else
-                {
-                    Response.Redirect("Default.aspx", true);
+                    if (c != null)
+                    {
+                        ClubBox.Club = c;
+                    }
+                    else
+                    {
+                        Response.Redirect("Default.aspx", true);
+                    }
                 }
             }
         }

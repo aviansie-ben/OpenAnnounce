@@ -10,20 +10,17 @@ using Announcements.Data;
 
 namespace Announcements.Admin
 {
-    public partial class AnnouncementEdit : System.Web.UI.Page
+    public partial class AnnouncementEdit : AnnouncementsPage
     {
-        User userInfo;
-        Announcement info;
+        private Announcement info;
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            userInfo = new User(User);
-
             if (Request.Params["id"] != null)
             {
                 try
                 {
-                    info = Announcement.FromDatabase(Int32.Parse(Request.Params["id"]));
+                    info = Announcement.FromDatabase(DatabaseManager.Current, Int32.Parse(Request.Params["id"]));
                     if (info == null)
                         Response.Redirect("AnnouncementList.aspx", true);
                 }
@@ -34,16 +31,18 @@ namespace Announcements.Admin
             }
             else
             {
-                info = new Announcement();
+                info = new Announcement(DatabaseManager.Current);
             }
 
-            if (!userInfo.SecurityAccess["CanAccessBackend"])
+            if (!CurrentUser.SecurityAccess["CanAccessBackend"])
             {
                 Response.Redirect("403.aspx", true);
             }
 
-            if (info.Id > 0 && info.CreatorId != userInfo.Profile.Id && !userInfo.SecurityAccess["CanViewAllAnnouncement"])
+            if (info.Id > 0 && info.CreatorId != CurrentUser.Profile.Id && !CurrentUser.SecurityAccess["CanViewAllAnnouncement"])
+            {
                 Response.Redirect("AnnouncementList.aspx", true);
+            }
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -96,11 +95,11 @@ namespace Announcements.Admin
 
         private void CheckEditPermissions()
         {
-            SubmitLink.Visible = (info.Id <= 0 || info.CreatorId == userInfo.Profile.Id || userInfo.SecurityAccess["CanEditAllAnnouncement"]);
-            SubmitAndApproveLink.Visible = SubmitLink.Visible && userInfo.SecurityAccess["CanApproveAnnouncement"] && (info.Status == Announcement.AnnouncementStatus.Pending || info.Status == Announcement.AnnouncementStatus.Denied || info.Status == Announcement.AnnouncementStatus.Deleted);
+            SubmitLink.Visible = (info.Id <= 0 || info.CreatorId == CurrentUser.Profile.Id || CurrentUser.SecurityAccess["CanEditAllAnnouncement"]);
+            SubmitAndApproveLink.Visible = SubmitLink.Visible && CurrentUser.SecurityAccess["CanApproveAnnouncement"] && (info.Status == Announcement.AnnouncementStatus.Pending || info.Status == Announcement.AnnouncementStatus.Denied || info.Status == Announcement.AnnouncementStatus.Deleted);
             DeleteLink.Visible = (info.Id > 0 && SubmitLink.Visible);
 
-            ImportanceContainer.Visible = userInfo.SecurityAccess["CanAdvancedEditAnnouncement"];
+            ImportanceContainer.Visible = CurrentUser.SecurityAccess["CanAdvancedEditAnnouncement"];
 
             AnnouncementTitle.ReadOnly = !SubmitLink.Visible;
             AnnouncementBody.ReadOnly = !SubmitLink.Visible;
@@ -111,9 +110,9 @@ namespace Announcements.Admin
             Scope.Enabled = SubmitLink.Visible;
             Importance.Enabled = SubmitLink.Visible;
 
-            AdminInfobox.Visible = (info.Id > 0 && (userInfo.SecurityAccess["CanApproveAnnouncement"] || userInfo.SecurityAccess["CanHardDeleteAnnouncement"]));
-            ApproveDeny.Visible = userInfo.SecurityAccess["CanApproveAnnouncement"];
-            HardDelete.Visible = userInfo.SecurityAccess["CanHardDeleteAnnouncement"] && SubmitLink.Visible;
+            AdminInfobox.Visible = (info.Id > 0 && (CurrentUser.SecurityAccess["CanApproveAnnouncement"] || CurrentUser.SecurityAccess["CanHardDeleteAnnouncement"]));
+            ApproveDeny.Visible = CurrentUser.SecurityAccess["CanApproveAnnouncement"];
+            HardDelete.Visible = CurrentUser.SecurityAccess["CanHardDeleteAnnouncement"] && SubmitLink.Visible;
         }
 
         private void PopulateFields()
@@ -128,7 +127,7 @@ namespace Announcements.Admin
 
         private void PopulateScope()
         {
-            foreach (Scope s in Data.Scope.AllFromDatabase())
+            foreach (Scope s in Data.Scope.AllFromDatabase(DatabaseManager.Current))
             {
                 Scope.Items.Add(new ListItem(s.Name, s.Id.ToString()));
                 if (info.ScopeId == s.Id)
@@ -192,9 +191,9 @@ namespace Announcements.Admin
             {
                 if (info.Id > 0)
                 {
-                    if (info.CreatorId != userInfo.Profile.Id && !userInfo.SecurityAccess["CanEditAllAnnouncement"])
+                    if (info.CreatorId != CurrentUser.Profile.Id && !CurrentUser.SecurityAccess["CanEditAllAnnouncement"])
                     {
-                        ShowMessage("You have not been granted access to edit this announcement. Please contact an administrator for assistance.", "message-error");
+                        Main.DisplayErrorMessage(Message, "You have not been granted access to edit this announcement. Please contact an administrator for assistance.");
                     }
                     else
                     {
@@ -204,16 +203,16 @@ namespace Announcements.Admin
                         {
                             info.Status = Announcement.AnnouncementStatus.Pending;
                         }
-                        else if (status == Announcement.AnnouncementStatus.Approved && !userInfo.SecurityAccess["CanApproveAnnouncement"])
+                        else if (status == Announcement.AnnouncementStatus.Approved && !CurrentUser.SecurityAccess["CanApproveAnnouncement"])
                         {
                             info.Status = Announcement.AnnouncementStatus.Pending;
                         }
 
-                        info.EditorId = userInfo.Profile.Id;
+                        info.EditorId = CurrentUser.Profile.Id;
                         info.EditTime = DateTime.Now;
                         info.Update();
 
-                        if (status == Announcement.AnnouncementStatus.Approved && !userInfo.SecurityAccess["CanApproveAnnouncement"])
+                        if (status == Announcement.AnnouncementStatus.Approved && !CurrentUser.SecurityAccess["CanApproveAnnouncement"])
                             Response.Redirect("AnnouncementList.aspx?msg=edit_reapprove", true);
                         else if (status == Announcement.AnnouncementStatus.Denied)
                             Response.Redirect("AnnouncementList.aspx?msg=resubmit", true);
@@ -225,13 +224,13 @@ namespace Announcements.Admin
                 }
                 else
                 {
-                    if (!userInfo.SecurityAccess["CanSubmitAnnouncement"])
+                    if (!CurrentUser.SecurityAccess["CanSubmitAnnouncement"])
                     {
                         ShowMessage("You have not been granted access to submit announcements. Please contact an administrator for assistance.", "message-error");
                     }
                     else
                     {
-                        info.CreatorId = userInfo.Profile.Id;
+                        info.CreatorId = CurrentUser.Profile.Id;
                         info.CreateTime = DateTime.Now;
                         info.Insert();
                         Response.Redirect("AnnouncementList.aspx?msg=submit", true);
@@ -242,7 +241,7 @@ namespace Announcements.Admin
 
         protected void SubmitAndApproveLink_Click(object sender, EventArgs e)
         {
-            if (!userInfo.SecurityAccess["CanApproveAnnouncement"])
+            if (!CurrentUser.SecurityAccess["CanApproveAnnouncement"])
             {
                 ShowMessage("You don't have access to approve announcements.", "message-error");
                 return;
@@ -251,7 +250,7 @@ namespace Announcements.Admin
             {
                 if (info.Id > 0)
                 {
-                    if (info.CreatorId != userInfo.Profile.Id && !userInfo.SecurityAccess["CanEditAllAnnouncement"])
+                    if (info.CreatorId != CurrentUser.Profile.Id && !CurrentUser.SecurityAccess["CanEditAllAnnouncement"])
                     {
                         ShowMessage("You have not been granted access to edit this announcement. Please contact an administrator for assistance.", "message-error");
                     }
@@ -260,9 +259,9 @@ namespace Announcements.Admin
                         Announcement.AnnouncementStatus status = info.Status;
                         info.Status = Announcement.AnnouncementStatus.Approved;
 
-                        info.EditorId = userInfo.Profile.Id;
+                        info.EditorId = CurrentUser.Profile.Id;
                         info.EditTime = DateTime.Now;
-                        info.StatusUserId = userInfo.Profile.Id;
+                        info.StatusUserId = CurrentUser.Profile.Id;
                         info.StatusTime = DateTime.Now;
                         info.Update();
 
@@ -276,16 +275,16 @@ namespace Announcements.Admin
                 }
                 else
                 {
-                    if (!userInfo.SecurityAccess["CanSubmitAnnouncement"])
+                    if (!CurrentUser.SecurityAccess["CanSubmitAnnouncement"])
                     {
                         ShowMessage("You have not been granted access to submit announcements. Please contact an administrator for assistance.", "message-error");
                     }
                     else
                     {
                         info.Status = Announcement.AnnouncementStatus.Approved;
-                        info.CreatorId = userInfo.Profile.Id;
+                        info.CreatorId = CurrentUser.Profile.Id;
                         info.CreateTime = DateTime.Now;
-                        info.StatusUserId = userInfo.Profile.Id;
+                        info.StatusUserId = CurrentUser.Profile.Id;
                         info.StatusTime = DateTime.Now;
                         info.Insert();
                         Response.Redirect("AnnouncementList.aspx?msg=submit_autoapproval", true);
@@ -298,14 +297,14 @@ namespace Announcements.Admin
         {
             info.Status = Announcement.AnnouncementStatus.Deleted;
             info.StatusTime = DateTime.Now;
-            info.StatusUserId = userInfo.Profile.Id;
+            info.StatusUserId = CurrentUser.Profile.Id;
             info.Update();
             Response.Redirect("AnnouncementList.aspx?msg=delete_soft", true);
         }
 
         protected void HardDeleteLink_Click(object sender, EventArgs e)
         {
-            if (!SubmitLink.Visible || !userInfo.SecurityAccess["CanHardDeleteAnnouncement"])
+            if (!SubmitLink.Visible || !CurrentUser.SecurityAccess["CanHardDeleteAnnouncement"])
             {
                 ShowMessage("You have not been granted access to permanently delete announcements!", "message-error");
             }
@@ -313,10 +312,12 @@ namespace Announcements.Admin
             {
                 if (HardDeleteCheck.Checked)
                 {
-                    SqlCommand cmd = new SqlCommand("DELETE FROM Announcements WHERE Id=@id", DatabaseManager.DatabaseConnection);
-                    cmd.Parameters.AddWithValue("@id", info.Id);
-                    cmd.ExecuteNonQuery();
-                    Response.Redirect("AnnouncementList.aspx?msg=delete_hard", true);
+                    using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("DELETE FROM Announcements WHERE Id=@id"))
+                    {
+                        cmd.Parameters.AddWithValue("@id", info.Id);
+                        cmd.ExecuteNonQuery();
+                        Response.Redirect("AnnouncementList.aspx?msg=delete_hard", true);
+                    }
                 }
                 else
                 {
@@ -327,7 +328,7 @@ namespace Announcements.Admin
 
         protected void ApproveLink_Click(object sender, EventArgs e)
         {
-            if (!userInfo.SecurityAccess["CanApproveAnnouncement"])
+            if (!CurrentUser.SecurityAccess["CanApproveAnnouncement"])
             {
                 ShowMessage("You have not been granted access to approve announcements.", "message-error");
             }
@@ -339,7 +340,7 @@ namespace Announcements.Admin
             {
                 info.Status = Announcement.AnnouncementStatus.Approved;
                 info.StatusTime = DateTime.Now;
-                info.StatusUserId = userInfo.Profile.Id;
+                info.StatusUserId = CurrentUser.Profile.Id;
                 info.Update();
                 Response.Redirect("AnnouncementList.aspx?msg=approve", true);
             }
@@ -347,7 +348,7 @@ namespace Announcements.Admin
 
         protected void DenyLink_Click(object sender, EventArgs e)
         {
-            if (!userInfo.SecurityAccess["CanApproveAnnouncement"])
+            if (!CurrentUser.SecurityAccess["CanApproveAnnouncement"])
             {
                 ShowMessage("You have not been granted access to deny announcements.", "message-error");
             }
@@ -364,7 +365,7 @@ namespace Announcements.Admin
                 info.Status = Announcement.AnnouncementStatus.Denied;
                 info.StatusMessage = DenyReason.Text;
                 info.StatusTime = DateTime.Now;
-                info.StatusUserId = userInfo.Profile.Id;
+                info.StatusUserId = CurrentUser.Profile.Id;
                 info.Update();
                 Response.Redirect("AnnouncementList.aspx?msg=deny", true);
             }

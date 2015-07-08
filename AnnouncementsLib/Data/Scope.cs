@@ -28,37 +28,40 @@ namespace Announcements.Data
             Name = (string)r["Name"];
         }
 
-        public static Scope FromDatabase(int id)
+        public static Scope FromDatabase(DatabaseManager manager, int id)
         {
             if (id <= 0)
                 return everybodyScope;
 
-            SqlCommand cmd = new SqlCommand("SELECT * FROM Scopes WHERE Id=@id", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@id", id);
-
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = manager.CreateCommand("SELECT * FROM Scopes WHERE Id=@id"))
             {
-                if (r.Read())
-                    return new Scope(r);
-                else
-                    return null;
+                cmd.Parameters.AddWithValue("@id", id);
+
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    if (r.Read())
+                        return new Scope(r);
+                    else
+                        return null;
+                }
             }
         }
 
-        public static List<Scope> AllFromDatabase()
+        public static List<Scope> AllFromDatabase(DatabaseManager manager)
         {
             List<Scope> scopes = new List<Scope>();
             scopes.Add(everybodyScope);
 
-            SqlCommand cmd = new SqlCommand("SELECT * FROM Scopes", DatabaseManager.DatabaseConnection);
-
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = manager.CreateCommand("SELECT * FROM Scopes"))
             {
-                while (r.Read())
-                    scopes.Add(new Scope(r));
-            }
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    while (r.Read())
+                        scopes.Add(new Scope(r));
+                }
 
-            return scopes;
+                return scopes;
+            }
         }
     }
 }

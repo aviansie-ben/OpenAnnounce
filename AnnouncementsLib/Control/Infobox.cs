@@ -14,7 +14,6 @@ namespace Announcements.Control
     [ParseChildren(false)]
     public class Infobox : WebControl
     {
-        [Bindable(true)]
         [Category("Appearance")]
         [DefaultValue("")]
         [Localizable(true)]
@@ -32,7 +31,6 @@ namespace Announcements.Control
             }
         }
 
-        [Bindable(true)]
         [Category("Appearance")]
         [DefaultValue("")]
         [Localizable(true)]
@@ -50,7 +48,6 @@ namespace Announcements.Control
             }
         }
 
-        [Bindable(true)]
         [Category("Appearance")]
         [DefaultValue(false)]
         [Localizable(true)]

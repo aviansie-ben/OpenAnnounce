@@ -10,7 +10,7 @@ using Announcements.Data;
 
 namespace Announcements.Admin
 {
-    public partial class ClubList : System.Web.UI.Page
+    public partial class ClubList : AnnouncementsPage
     {
         public static readonly Dictionary<string, string> messages = new Dictionary<string, string>()
         {
@@ -42,18 +42,16 @@ namespace Announcements.Admin
             }
         }
 
-        User userInfo;
         Dictionary<int, CheckBox> checkBoxes = new Dictionary<int, CheckBox>();
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            userInfo = new User(User);
-            if (!userInfo.SecurityAccess["CanAccessBackend"])
+            if (!CurrentUser.SecurityAccess["CanAccessBackend"])
             {
                 Response.Redirect("403.aspx", true);
             }
 
-            NewClub.Visible = userInfo.SecurityAccess["CanSubmitClub"];
+            NewClub.Visible = CurrentUser.SecurityAccess["CanSubmitClub"];
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -69,26 +67,26 @@ namespace Announcements.Admin
             {
                 ClubTable.Rows.RemoveAt(1);
             }
-            Club.PopulatePageNumber(userInfo.Profile, CurrentPage, MaxPage, ViewMode.SelectedValue, Page, 10);
-            Club.PopulateClubTable(userInfo.Profile, ViewMode.SelectedValue, ViewDeleted.Checked, ClubTable, (Page - 1) * 10, 10, checkBoxes);
+            Club.PopulatePageNumber(DatabaseManager.Current, CurrentUser.Profile, CurrentPage, MaxPage, ViewMode.SelectedValue, Page, 10);
+            Club.PopulateClubTable(DatabaseManager.Current, CurrentUser.Profile, ViewMode.SelectedValue, ViewDeleted.Checked, ClubTable, (Page - 1) * 10, 10, checkBoxes);
         }
 
         private void PopulateModes()
         {
             if (ViewMode.Items.Count == 0)
             {
-                if (userInfo.SecurityAccess["CanApproveClub"] && userInfo.SecurityAccess["CanViewAllClub"])
+                if (CurrentUser.SecurityAccess["CanApproveClub"] && CurrentUser.SecurityAccess["CanViewAllClub"])
                     ViewMode.Items.Add(new ListItem("Approval Mode", "Approval"));
-                if (userInfo.SecurityAccess["CanViewAllClub"])
+                if (CurrentUser.SecurityAccess["CanViewAllClub"])
                     ViewMode.Items.Add(new ListItem("View All Mode", "ViewAll"));
                 ViewMode.Items.Add(new ListItem("Submission Mode", "Submission"));
                 
             }
             else
             {
-                if (ViewMode.SelectedValue == "ViewAll" && !userInfo.SecurityAccess["CanViewAllClub"])
+                if (ViewMode.SelectedValue == "ViewAll" && !CurrentUser.SecurityAccess["CanViewAllClub"])
                     ViewMode.SelectedIndex = 0;
-                else if (ViewMode.SelectedValue == "Approval" && !userInfo.SecurityAccess["CanApproveClub"])
+                else if (ViewMode.SelectedValue == "Approval" && !CurrentUser.SecurityAccess["CanApproveClub"])
                     ViewMode.SelectedIndex = 0;
             }
         }
@@ -126,7 +124,7 @@ namespace Announcements.Admin
             foreach (KeyValuePair<int, CheckBox> check in checkBoxes)
             {
                 if (check.Value.Checked)
-                    toDelete.Add(Club.FromDatabase(check.Key));
+                    toDelete.Add(Club.FromDatabase(DatabaseManager.Current, check.Key));
             }
 
             if (toDelete.Count == 0)
@@ -137,11 +135,11 @@ namespace Announcements.Admin
                 return;
             }
 
-            if (!userInfo.SecurityAccess["CanEditAllClub"])
+            if (!CurrentUser.SecurityAccess["CanEditAllClub"])
             {
                 foreach (Club c in toDelete)
                 {
-                    if (c.CreatorId != userInfo.Profile.Id)
+                    if (c.CreatorId != CurrentUser.Profile.Id)
                     {
                         Message.Visible = true;
                         Message.Attributes["class"] = "message-base message-error";
@@ -154,7 +152,7 @@ namespace Announcements.Admin
             foreach (Club c in toDelete)
             {
                 c.Status = Club.ClubStatus.Deleted;
-                c.StatusUserId = userInfo.Profile.Id;
+                c.StatusUserId = CurrentUser.Profile.Id;
                 c.StatusTime = DateTime.Now;
                 c.Update();
             }

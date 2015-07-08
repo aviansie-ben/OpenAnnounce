@@ -10,20 +10,17 @@ using Announcements.Data;
 
 namespace Announcements.Admin
 {
-    public partial class ClubEdit : System.Web.UI.Page
+    public partial class ClubEdit : AnnouncementsPage
     {
-        User userInfo;
         Club info;
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            userInfo = new User(User);
-
             if (Request.Params["id"] != null)
             {
                 try
                 {
-                    info = Club.FromDatabase(Int32.Parse(Request.Params["id"]));
+                    info = Club.FromDatabase(DatabaseManager.Current, Int32.Parse(Request.Params["id"]));
                     if (info == null)
                         Response.Redirect("ClubList.aspx", true);
                 }
@@ -34,15 +31,15 @@ namespace Announcements.Admin
             }
             else
             {
-                info = new Club();
+                info = new Club(DatabaseManager.Current);
             }
 
-            if (!userInfo.SecurityAccess["CanAccessBackend"])
+            if (!CurrentUser.SecurityAccess["CanAccessBackend"])
             {
                 Response.Redirect("403.aspx", true);
             }
 
-            if (info.Id > 0 && info.CreatorId != userInfo.Profile.Id && !userInfo.SecurityAccess["CanViewAllClub"])
+            if (info.Id > 0 && info.CreatorId != CurrentUser.Profile.Id && !CurrentUser.SecurityAccess["CanViewAllClub"])
                 Response.Redirect("ClubList.aspx", true);
         }
 
@@ -96,10 +93,10 @@ namespace Announcements.Admin
 
         private void CheckEditPermissions()
         {
-            SubmitLink.Visible = (info.Id <= 0 || info.CreatorId == userInfo.Profile.Id || userInfo.SecurityAccess["CanEditAllClub"]);
-            SubmitAndApproveLink.Visible = SubmitLink.Visible && userInfo.SecurityAccess["CanApproveClub"] && (info.Status == Club.ClubStatus.Pending || info.Status == Club.ClubStatus.Denied || info.Status == Club.ClubStatus.Deleted);
+            SubmitLink.Visible = (info.Id <= 0 || info.CreatorId == CurrentUser.Profile.Id || CurrentUser.SecurityAccess["CanEditAllClub"]);
+            SubmitAndApproveLink.Visible = SubmitLink.Visible && CurrentUser.SecurityAccess["CanApproveClub"] && (info.Status == Club.ClubStatus.Pending || info.Status == Club.ClubStatus.Denied || info.Status == Club.ClubStatus.Deleted);
             DeleteLink.Visible = (info.Id > 0 && SubmitLink.Visible);
-            EditProfile.Visible = userInfo.SecurityAccess["CanEditProfiles"];
+            EditProfile.Visible = CurrentUser.SecurityAccess["CanEditProfiles"];
 
             ClubName.ReadOnly = !SubmitLink.Visible;
             ClubDescription.ReadOnly = !SubmitLink.Visible;
@@ -108,14 +105,14 @@ namespace Announcements.Admin
             AfterSchool.Enabled = SubmitLink.Visible;
             Location.ReadOnly = !SubmitLink.Visible;
 
-            AdminInfobox.Visible = (info.Id > 0 && (userInfo.SecurityAccess["CanApproveClub"] || userInfo.SecurityAccess["CanHardDeleteClub"]));
-            ApproveDeny.Visible = userInfo.SecurityAccess["CanApproveClub"];
-            HardDelete.Visible = userInfo.SecurityAccess["CanHardDeleteClub"] && SubmitLink.Visible;
+            AdminInfobox.Visible = (info.Id > 0 && (CurrentUser.SecurityAccess["CanApproveClub"] || CurrentUser.SecurityAccess["CanHardDeleteClub"]));
+            ApproveDeny.Visible = CurrentUser.SecurityAccess["CanApproveClub"];
+            HardDelete.Visible = CurrentUser.SecurityAccess["CanHardDeleteClub"] && SubmitLink.Visible;
         }
 
         private void PopulateFields()
         {
-            UserProfile teacher = UserProfile.FromDatabase(info.TeacherId);
+            UserProfile teacher = UserProfile.FromDatabase(DatabaseManager.Current, info.TeacherId);
 
             ClubName.Text = HttpUtility.HtmlDecode(info.Name);
             ClubDescription.Text = info.Description;
@@ -137,7 +134,7 @@ namespace Announcements.Admin
             info.Name = HttpUtility.HtmlEncode(ClubName.Text);
             info.Description = Sanitizer.Sanitize(ClubDescription.Text, Sanitizer.StrictRules);
 
-            UserProfile teacher = UserProfile.FromDatabase(Teacher.Text, false);
+            UserProfile teacher = UserProfile.FromDatabase(DatabaseManager.Current, Teacher.Text, false);
 
             if (teacher == null)
             {
@@ -166,7 +163,7 @@ namespace Announcements.Admin
             {
                 if (info.Id > 0)
                 {
-                    if (info.CreatorId != userInfo.Profile.Id && !userInfo.SecurityAccess["CanEditAllClub"])
+                    if (info.CreatorId != CurrentUser.Profile.Id && !CurrentUser.SecurityAccess["CanEditAllClub"])
                     {
                         ShowMessage("You have not been granted access to edit this club. Please contact an administrator for assistance.", "message-error");
                     }
@@ -178,16 +175,16 @@ namespace Announcements.Admin
                         {
                             info.Status = Club.ClubStatus.Pending;
                         }
-                        else if (status == Club.ClubStatus.Approved && !userInfo.SecurityAccess["CanApproveClub"])
+                        else if (status == Club.ClubStatus.Approved && !CurrentUser.SecurityAccess["CanApproveClub"])
                         {
                             info.Status = Club.ClubStatus.Pending;
                         }
 
-                        info.EditorId = userInfo.Profile.Id;
+                        info.EditorId = CurrentUser.Profile.Id;
                         info.EditTime = DateTime.Now;
                         info.Update();
 
-                        if (status == Club.ClubStatus.Approved && !userInfo.SecurityAccess["CanApproveClub"])
+                        if (status == Club.ClubStatus.Approved && !CurrentUser.SecurityAccess["CanApproveClub"])
                             Response.Redirect("ClubList.aspx?msg=edit_reapprove", true);
                         else if (status == Club.ClubStatus.Denied)
                             Response.Redirect("ClubList.aspx?msg=resubmit", true);
@@ -199,13 +196,13 @@ namespace Announcements.Admin
                 }
                 else
                 {
-                    if (!userInfo.SecurityAccess["CanSubmitClub"])
+                    if (!CurrentUser.SecurityAccess["CanSubmitClub"])
                     {
                         ShowMessage("You have not been granted access to submit clubs. Please contact an administrator for assistance.", "message-error");
                     }
                     else
                     {
-                        info.CreatorId = userInfo.Profile.Id;
+                        info.CreatorId = CurrentUser.Profile.Id;
                         info.CreateTime = DateTime.Now;
                         info.Insert();
                         Response.Redirect("ClubList.aspx?msg=submit", true);
@@ -216,7 +213,7 @@ namespace Announcements.Admin
 
         protected void SubmitAndApproveLink_Click(object sender, EventArgs e)
         {
-            if (!userInfo.SecurityAccess["CanApproveClub"])
+            if (!CurrentUser.SecurityAccess["CanApproveClub"])
             {
                 ShowMessage("You don't have access to approve clubs.", "message-error");
                 return;
@@ -226,7 +223,7 @@ namespace Announcements.Admin
             {
                 if (info.Id > 0)
                 {
-                    if (info.CreatorId != userInfo.Profile.Id && !userInfo.SecurityAccess["CanEditAllClub"])
+                    if (info.CreatorId != CurrentUser.Profile.Id && !CurrentUser.SecurityAccess["CanEditAllClub"])
                     {
                         ShowMessage("You have not been granted access to edit this club. Please contact an administrator for assistance.", "message-error");
                     }
@@ -235,9 +232,9 @@ namespace Announcements.Admin
                         Club.ClubStatus status = info.Status;
                         info.Status = Club.ClubStatus.Approved;
 
-                        info.EditorId = userInfo.Profile.Id;
+                        info.EditorId = CurrentUser.Profile.Id;
                         info.EditTime = DateTime.Now;
-                        info.StatusUserId = userInfo.Profile.Id;
+                        info.StatusUserId = CurrentUser.Profile.Id;
                         info.StatusTime = DateTime.Now;
                         info.Update();
 
@@ -251,16 +248,16 @@ namespace Announcements.Admin
                 }
                 else
                 {
-                    if (!userInfo.SecurityAccess["CanSubmitClub"])
+                    if (!CurrentUser.SecurityAccess["CanSubmitClub"])
                     {
                         ShowMessage("You have not been granted access to submit clubs. Please contact an administrator for assistance.", "message-error");
                     }
                     else
                     {
                         info.Status = Club.ClubStatus.Approved;
-                        info.CreatorId = userInfo.Profile.Id;
+                        info.CreatorId = CurrentUser.Profile.Id;
                         info.CreateTime = DateTime.Now;
-                        info.StatusUserId = userInfo.Profile.Id;
+                        info.StatusUserId = CurrentUser.Profile.Id;
                         info.StatusTime = DateTime.Now;
                         info.Insert();
                         Response.Redirect("ClubList.aspx?msg=submit_autoapproval", true);
@@ -273,14 +270,14 @@ namespace Announcements.Admin
         {
             info.Status = Club.ClubStatus.Deleted;
             info.StatusTime = DateTime.Now;
-            info.StatusUserId = userInfo.Profile.Id;
+            info.StatusUserId = CurrentUser.Profile.Id;
             info.Update();
             Response.Redirect("ClubList.aspx?msg=delete_soft", true);
         }
 
         protected void HardDeleteLink_Click(object sender, EventArgs e)
         {
-            if (!SubmitLink.Visible || !userInfo.SecurityAccess["CanHardDeleteClub"])
+            if (!SubmitLink.Visible || !CurrentUser.SecurityAccess["CanHardDeleteClub"])
             {
                 ShowMessage("You have not been granted access to permanently delete clubs!", "message-error");
             }
@@ -288,10 +285,12 @@ namespace Announcements.Admin
             {
                 if (HardDeleteCheck.Checked)
                 {
-                    SqlCommand cmd = new SqlCommand("DELETE FROM Clubs WHERE Id=@id", DatabaseManager.DatabaseConnection);
-                    cmd.Parameters.AddWithValue("@id", info.Id);
-                    cmd.ExecuteNonQuery();
-                    Response.Redirect("ClubList.aspx?msg=delete_hard", true);
+                    using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("DELETE FROM Clubs WHERE Id=@id"))
+                    {
+                        cmd.Parameters.AddWithValue("@id", info.Id);
+                        cmd.ExecuteNonQuery();
+                        Response.Redirect("ClubList.aspx?msg=delete_hard", true);
+                    }
                 }
                 else
                 {
@@ -302,7 +301,7 @@ namespace Announcements.Admin
 
         protected void ApproveLink_Click(object sender, EventArgs e)
         {
-            if (!userInfo.SecurityAccess["CanApproveClub"])
+            if (!CurrentUser.SecurityAccess["CanApproveClub"])
             {
                 ShowMessage("You have not been granted access to approve clubs.", "message-error");
             }
@@ -314,7 +313,7 @@ namespace Announcements.Admin
             {
                 info.Status = Club.ClubStatus.Approved;
                 info.StatusTime = DateTime.Now;
-                info.StatusUserId = userInfo.Profile.Id;
+                info.StatusUserId = CurrentUser.Profile.Id;
                 info.Update();
                 Response.Redirect("ClubList.aspx?msg=approve", true);
             }
@@ -322,7 +321,7 @@ namespace Announcements.Admin
 
         protected void DenyLink_Click(object sender, EventArgs e)
         {
-            if (!userInfo.SecurityAccess["CanApproveClub"])
+            if (!CurrentUser.SecurityAccess["CanApproveClub"])
             {
                 ShowMessage("You have not been granted access to deny clubs.", "message-error");
             }
@@ -339,7 +338,7 @@ namespace Announcements.Admin
                 info.Status = Club.ClubStatus.Denied;
                 info.StatusMessage = DenyReason.Text;
                 info.StatusTime = DateTime.Now;
-                info.StatusUserId = userInfo.Profile.Id;
+                info.StatusUserId = CurrentUser.Profile.Id;
                 info.Update();
                 Response.Redirect("ClubList.aspx?msg=deny", true);
             }
@@ -349,7 +348,7 @@ namespace Announcements.Admin
         {
             if (Teacher.Text.Length > 0)
             {
-                UserProfile u = UserProfile.FromDatabase(Teacher.Text, true);
+                UserProfile u = UserProfile.FromDatabase(DatabaseManager.Current, Teacher.Text, true);
 
                 Response.Redirect("ProfileEdit.aspx?id=" + u.Id);
             }

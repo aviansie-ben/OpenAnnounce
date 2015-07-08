@@ -6,7 +6,18 @@
         <div id="Message" class="message-base" runat="server" visible="false"></div>
         <ann:Infobox ID="MainInfobox" runat="server" Title="Club">
             <asp:TextBox ID="ClubName" runat="server" MaxLength="32" Width="256px" Font-Size="1.2em" /><br />
-            <cke:CKEditorControl ID="ClubDescription" runat="server" BasePath="../Scripts/CKEditor" Width="100%" Height="256px"></cke:CKEditorControl>
+            <cke:CKEditorControl ID="ClubDescription" runat="server" BasePath="../Scripts/CKEditor" Width="100%" Height="256px"
+                Toolbar="Source
+                Cut|Copy|Paste|PasteText|PasteFromWord|-|Undo|Redo
+                Find|Replace|-|SelectAll
+                Bold|Italic|Strike|-|RemoveFormat
+                NumberedList|BulletedList|-|Blockquote
+                Link|Unlink
+                HorizontalRule|SpecialChar
+                /
+                Format
+                Maximize|ShowBlocks
+                About" ContentsCss="../Style/Infobox.css" RemoveDialogTabs="link:advanced"></cke:CKEditorControl>
             <br />
             Teacher in charge (Username in form CBEORG\&lt;Username&gt;): <asp:TextBox ID="Teacher" runat="server" />
             <asp:LinkButton ID="EditProfile" runat="server" CssClass="linkbutton" OnClientClick="aspnetForm.target='_blank';" OnClick="EditProfile_Click" Text="Create/Edit Profile" /><br />

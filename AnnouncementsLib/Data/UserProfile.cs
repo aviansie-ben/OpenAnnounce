@@ -8,6 +8,8 @@ namespace Announcements.Data
 {
     public class UserProfile
     {
+        private DatabaseManager _manager;
+
         private int _id;
         private string _username, _displayname;
 
@@ -15,15 +17,19 @@ namespace Announcements.Data
         public string Username { get { return _username; } }
         public string DisplayName { get { return _displayname; } set { _displayname = value; } }
 
-        public UserProfile(string username)
+        public UserProfile(DatabaseManager manager, string username)
         {
+            _manager = manager;
+
             _id = -1;
             _username = username;
             _displayname = username.Split('\\')[1];
         }
 
-        public UserProfile(SqlDataReader r)
+        public UserProfile(DatabaseManager manager, SqlDataReader r)
         {
+            _manager = manager;
+
             _id = (int)r["Id"];
             _username = (string)r["Username"];
             _displayname = (string)r["DisplayName"];
@@ -31,59 +37,75 @@ namespace Announcements.Data
 
         public void Insert()
         {
-            SqlCommand cmd = new SqlCommand("INSERT INTO Users (Username, DisplayName) VALUES (@username, @displayName)", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@username", Username);
-            cmd.Parameters.AddWithValue("@displayName", DisplayName);
-            cmd.ExecuteNonQuery();
+            using (SqlCommand cmd = _manager.CreateCommand("INSERT INTO Users (Username, DisplayName) VALUES (@username, @displayName)"))
+            {
+                cmd.Parameters.AddWithValue("@username", Username);
+                cmd.Parameters.AddWithValue("@displayName", DisplayName);
+                cmd.ExecuteNonQuery();
+            }
 
-            cmd = new SqlCommand("SELECT ID FROM Users WHERE Username=@username", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@username", Username);
-            _id = (int)cmd.ExecuteScalar();
+            using (SqlCommand cmd = _manager.CreateCommand("SELECT ID FROM Users WHERE Username=@username"))
+            {
+                cmd.Parameters.AddWithValue("@username", Username);
+                _id = (int)cmd.ExecuteScalar();
+            }
         }
 
         public void Update()
         {
-            SqlCommand cmd = new SqlCommand("UPDATE Users SET Username=@username, DisplayName=@displayName WHERE Id=@id", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@id", Id);
-            cmd.Parameters.AddWithValue("@username", Username);
-            cmd.Parameters.AddWithValue("@displayName", DisplayName);
-            cmd.ExecuteNonQuery();
-        }
-
-        public static UserProfile FromDatabase(int id)
-        {
-            SqlCommand cmd = new SqlCommand("SELECT * FROM Users WHERE Id=@id", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@id", id);
-
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = _manager.CreateCommand("UPDATE Users SET Username=@username, DisplayName=@displayName WHERE Id=@id"))
             {
-                if (r.Read())
-                    return new UserProfile(r);
-                else
-                    return null;
+                cmd.Parameters.AddWithValue("@id", Id);
+                cmd.Parameters.AddWithValue("@username", Username);
+                cmd.Parameters.AddWithValue("@displayName", DisplayName);
+                cmd.ExecuteNonQuery();
             }
         }
 
-        public static UserProfile FromDatabase(string name)
+        public static UserProfile FromDatabase(DatabaseManager manager, int id)
         {
-            return FromDatabase(name, true);
+            using (SqlCommand cmd = manager.CreateCommand("SELECT * FROM Users WHERE Id=@id"))
+            {
+                cmd.Parameters.AddWithValue("@id", id);
+
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    if (r.Read())
+                        return new UserProfile(manager, r);
+                    else
+                        return null;
+                }
+            }
         }
 
-        public static UserProfile FromDatabase(string name, bool create)
+        public static UserProfile FromDatabase(DatabaseManager manager, string name)
         {
-            SqlCommand cmd = new SqlCommand("SELECT * FROM Users WHERE Username=@username", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@username", name);
+            return FromDatabase(manager, name, true);
+        }
 
-            using (SqlDataReader r = cmd.ExecuteReader())
+        public static UserProfile FromDatabase(DatabaseManager manager, string name, bool create)
+        {
+            using (SqlCommand cmd = manager.CreateCommand("SELECT * FROM Users WHERE Username=@username"))
             {
-                if (r.Read())
-                    return new UserProfile(r);
-                else
+                cmd.Parameters.AddWithValue("@username", name);
+
+                using (SqlDataReader r = cmd.ExecuteReader())
                 {
-                    r.Close();
-                    UserProfile u = new UserProfile(name);
-                    u.Insert();
-                    return u;
+                    if (r.Read())
+                    {
+                        return new UserProfile(manager, r);
+                    }
+                    else if (create)
+                    {
+                        r.Close();
+                        UserProfile u = new UserProfile(manager, name);
+                        u.Insert();
+                        return u;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
         }

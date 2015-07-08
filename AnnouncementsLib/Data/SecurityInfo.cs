@@ -41,6 +41,8 @@ namespace Announcements.Data
             }
         }
 
+        private DatabaseManager _manager;
+
         public int Id { get; private set; }
 
         public string Domain { get; private set; }
@@ -49,8 +51,10 @@ namespace Announcements.Data
 
         public Dictionary<string, bool> Permissions { get; private set; }
 
-        public SecurityInfo(string domain, string name, bool isUser)
+        public SecurityInfo(DatabaseManager manager, string domain, string name, bool isUser)
         {
+            _manager = manager;
+
             Domain = domain;
             Name = name;
             IsUser = isUser;
@@ -58,8 +62,10 @@ namespace Announcements.Data
             Permissions = new Dictionary<string, bool>();
         }
 
-        public SecurityInfo(SqlDataReader r)
+        public SecurityInfo(DatabaseManager manager, SqlDataReader r)
         {
+            _manager = manager;
+
             Id = (int)r["Id"];
             Domain = (string)r["Domain"];
             Name = (string)r["PrincipalName"];
@@ -74,23 +80,25 @@ namespace Announcements.Data
 
         public List<int> ListScopeIds()
         {
-            SqlCommand cmd = new SqlCommand("SELECT ScopeId FROM SecurityPrincipalScopes WHERE SecurityPrincipalId=@id", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@id", Id);
-
-            List<int> scopes = new List<int>();
-
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = _manager.CreateCommand("SELECT ScopeId FROM SecurityPrincipalScopes WHERE SecurityPrincipalId=@id"))
             {
-                while (r.Read())
-                    scopes.Add((int)r["ScopeId"]);
-            }
+                cmd.Parameters.AddWithValue("@id", Id);
 
-            return scopes;
+                List<int> scopes = new List<int>();
+
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    while (r.Read())
+                        scopes.Add((int)r["ScopeId"]);
+                }
+
+                return scopes;
+            }
         }
 
         public SecurityInfo CreateCopy(string domain, string name, bool isUser)
         {
-            SecurityInfo copy = new SecurityInfo(domain, name, isUser);
+            SecurityInfo copy = new SecurityInfo(_manager, domain, name, isUser);
             foreach (KeyValuePair<string, bool> permission in Permissions)
             {
                 copy.Permissions.Add(permission.Key, permission.Value);
@@ -100,14 +108,16 @@ namespace Announcements.Data
 
         public void Insert()
         {
-            SqlCommand cmd = new SqlCommand("INSERT INTO SecurityPrincipals(Domain, PrincipalName, IsUser" + InsertPopulate1() + ") VALUES (@domain, @principalName, @isUser" + InsertPopulate2() + ")", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@domain", Domain);
-            cmd.Parameters.AddWithValue("@principalName", Name);
-            cmd.Parameters.AddWithValue("@isUser", IsUser);
-            foreach (string permission in registeredPermissions)
-                cmd.Parameters.AddWithValue("@" + permission, this[permission]);
+            using (SqlCommand cmd = _manager.CreateCommand("INSERT INTO SecurityPrincipals(Domain, PrincipalName, IsUser" + InsertPopulate1() + ") VALUES (@domain, @principalName, @isUser" + InsertPopulate2() + ")"))
+            {
+                cmd.Parameters.AddWithValue("@domain", Domain);
+                cmd.Parameters.AddWithValue("@principalName", Name);
+                cmd.Parameters.AddWithValue("@isUser", IsUser);
+                foreach (string permission in registeredPermissions)
+                    cmd.Parameters.AddWithValue("@" + permission, this[permission]);
 
-            cmd.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
+            }
         }
 
         private string InsertPopulate1()
@@ -126,17 +136,19 @@ namespace Announcements.Data
             return r;
         }
 
-        public void Update()
+        public void Update(DatabaseManager manager)
         {
-            SqlCommand cmd = new SqlCommand("UPDATE SecurityPrincipals SET Domain=@domain, PrincipalName=@principalName, IsUser=@isUser" + UpdatePopulate1() + " WHERE Id=@id", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@id", Id);
-            cmd.Parameters.AddWithValue("@domain", Domain);
-            cmd.Parameters.AddWithValue("@principalName", Name);
-            cmd.Parameters.AddWithValue("@isUser", IsUser);
-            foreach (string permission in registeredPermissions)
-                cmd.Parameters.AddWithValue("@" + permission, this[permission]);
+            using (SqlCommand cmd = _manager.CreateCommand("UPDATE SecurityPrincipals SET Domain=@domain, PrincipalName=@principalName, IsUser=@isUser" + UpdatePopulate1() + " WHERE Id=@id"))
+            {
+                cmd.Parameters.AddWithValue("@id", Id);
+                cmd.Parameters.AddWithValue("@domain", Domain);
+                cmd.Parameters.AddWithValue("@principalName", Name);
+                cmd.Parameters.AddWithValue("@isUser", IsUser);
+                foreach (string permission in registeredPermissions)
+                    cmd.Parameters.AddWithValue("@" + permission, this[permission]);
 
-            cmd.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
+            }
         }
 
         private string UpdatePopulate1()
@@ -147,37 +159,44 @@ namespace Announcements.Data
             return r;
         }
 
-        public static SecurityInfo FromDatabase(int id)
+        public static SecurityInfo FromDatabase(DatabaseManager manager, int id)
         {
-            SqlCommand cmd = new SqlCommand("SELECT * FROM SecurityPrincipals WHERE Id=@id", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@id", id);
-
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = manager.CreateCommand("SELECT * FROM SecurityPrincipals WHERE Id=@id"))
             {
-                if (r.Read())
-                    return new SecurityInfo(r);
-                else
-                    return null;
+                cmd.Parameters.AddWithValue("@id", id);
+
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    if (r.Read())
+                        return new SecurityInfo(manager, r);
+                    else
+                        return null;
+                }
             }
         }
 
-        public static SecurityInfo FromDatabase(string principalName)
+        public static SecurityInfo FromDatabase(DatabaseManager manager, string principalName)
         {
-            return FromDatabase(principalName.Split('\\')[0], principalName.Split('\\')[1]);
+            if (principalName.Contains('\\'))
+                return FromDatabase(manager, principalName.Split('\\')[0], principalName.Split('\\')[1]);
+            else
+                return null;
         }
 
-        public static SecurityInfo FromDatabase(string domain, string principal)
+        public static SecurityInfo FromDatabase(DatabaseManager manager, string domain, string principal)
         {
-            SqlCommand cmd = new SqlCommand("SELECT * FROM SecurityPrincipals WHERE Domain=@domain AND PrincipalName=@principalName", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@domain", domain);
-            cmd.Parameters.AddWithValue("@principalName", principal);
-
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = manager.CreateCommand("SELECT * FROM SecurityPrincipals WHERE Domain=@domain AND PrincipalName=@principalName"))
             {
-                if (r.Read())
-                    return new SecurityInfo(r);
-                else
-                    return null;
+                cmd.Parameters.AddWithValue("@domain", domain);
+                cmd.Parameters.AddWithValue("@principalName", principal);
+
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    if (r.Read())
+                        return new SecurityInfo(manager, r);
+                    else
+                        return null;
+                }
             }
         }
     }
@@ -221,18 +240,17 @@ namespace Announcements.Data
             }
         }
 
-        public static CompiledSecurityInfo CompileAccessLevel(IPrincipal user)
+        public static CompiledSecurityInfo CompileAccessLevel(DatabaseManager manager, IPrincipal user)
         {
             if (user != null && user.Identity != null && user.Identity.Name != String.Empty)
             {
                 CompiledSecurityInfo level = new CompiledSecurityInfo();
 
-                level.AddPermissions(SecurityInfo.FromDatabase(user.Identity.Name));
+                level.AddPermissions(SecurityInfo.FromDatabase(manager, user.Identity.Name));
 
                 foreach (string group in Roles.GetRolesForUser())
                 {
-                    if (group.Contains('\\'))
-                        level.AddPermissions(SecurityInfo.FromDatabase(group));
+                    level.AddPermissions(SecurityInfo.FromDatabase(manager, group));
                 }
 
                 return level;

@@ -11,22 +11,19 @@ using Announcements.Data;
 
 namespace Announcements.Admin
 {
-    public partial class Default : System.Web.UI.Page
+    public partial class Default : AnnouncementsPage
     {
-        User userInfo;
-
         private List<NavbarEditRow> NavbarEditRows = new List<NavbarEditRow>();
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            userInfo = new User(User);
-            if (!userInfo.SecurityAccess["CanAccessBackend"])
+            if (!CurrentUser.SecurityAccess["CanAccessBackend"])
             {
                 Response.Redirect("403.aspx", true);
             }
 
-            NewAnnouncement.Visible = userInfo.SecurityAccess["CanSubmitAnnouncement"];
-            NewClub.Visible = userInfo.SecurityAccess["CanSubmitClub"];
+            NewAnnouncement.Visible = CurrentUser.SecurityAccess["CanSubmitAnnouncement"];
+            NewClub.Visible = CurrentUser.SecurityAccess["CanSubmitClub"];
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -38,10 +35,10 @@ namespace Announcements.Admin
             while (ClubTable.Rows.Count > 1)
                 ClubTable.Rows.RemoveAt(1);
 
-            Announcement.PopulateAnnouncementTable(userInfo.Profile, userInfo.SecurityAccess, AnnouncementTable, 0, 5, null);
-            Club.PopulateClubTable(userInfo.Profile, userInfo.SecurityAccess, ClubTable, 0, 5, null);
+            Announcement.PopulateAnnouncementTable(DatabaseManager.Current, CurrentUser.Profile, CurrentUser.SecurityAccess, AnnouncementTable, 0, 5, null);
+            Club.PopulateClubTable(DatabaseManager.Current, CurrentUser.Profile, CurrentUser.SecurityAccess, ClubTable, 0, 5, null);
 
-            if (userInfo.SecurityAccess["CanEditNavbar"])
+            if (CurrentUser.SecurityAccess["CanEditNavbar"])
             {
                 PopulateNavbarEdit();
             }
@@ -53,12 +50,14 @@ namespace Announcements.Admin
 
         private void PopulateNavbarEdit()
         {
-            SqlCommand cmd = new SqlCommand("SELECT * FROM NavbarLinks", DatabaseManager.DatabaseConnection);
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("SELECT * FROM NavbarLinks"))
             {
-                while (r.Read())
+                using (SqlDataReader r = cmd.ExecuteReader())
                 {
-                    NavbarEditRows.Add(new NavbarEditRow(r, this));
+                    while (r.Read())
+                    {
+                        NavbarEditRows.Add(new NavbarEditRow(r, this));
+                    }
                 }
             }
 
@@ -71,8 +70,8 @@ namespace Announcements.Admin
 
         private void PopulateProfile()
         {
-            Username.Text = userInfo.Profile.Username;
-            DisplayName.Text = userInfo.Profile.DisplayName;
+            Username.Text = CurrentUser.Profile.Username;
+            DisplayName.Text = CurrentUser.Profile.DisplayName;
         }
 
         private void NavbarSave_Click(object sender, EventArgs e)
@@ -105,13 +104,15 @@ namespace Announcements.Admin
                 row = NavbarEditRows[i];
                 if (row.DeleteButton == sender)
                 {
-                    SqlCommand cmd = new SqlCommand("DELETE FROM NavbarLinks WHERE Id=@id", DatabaseManager.DatabaseConnection);
-                    cmd.Parameters.AddWithValue("@id", row.Id);
-                    cmd.ExecuteNonQuery();
-                    NavbarEditRows.RemoveAt(i);
-                    NavbarTable.Rows.RemoveAt(i + 1);
-                    ShowMessage("That link has been removed from the navbar.", "message-success");
-                    return;
+                    using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("DELETE FROM NavbarLinks WHERE Id=@id"))
+                    {
+                        cmd.Parameters.AddWithValue("@id", row.Id);
+                        cmd.ExecuteNonQuery();
+                        NavbarEditRows.RemoveAt(i);
+                        NavbarTable.Rows.RemoveAt(i + 1);
+                        ShowMessage("That link has been removed from the navbar.", "message-success");
+                        return;
+                    }
                 }
             }
         }
@@ -191,7 +192,7 @@ namespace Announcements.Admin
                     ID = "sel_scope_" + _id
                 };
 
-                foreach (Scope s in Scope.AllFromDatabase())
+                foreach (Scope s in Scope.AllFromDatabase(DatabaseManager.Current))
                 {
                     _scopeBox.Items.Add(new ListItem(s.Name, s.Id.ToString()));
                     if (_scope == s.Id)
@@ -226,26 +227,36 @@ namespace Announcements.Admin
 
             public void CommitToDatabase()
             {
-                SqlCommand cmd = new SqlCommand("UPDATE NavbarLinks SET Text=@text, URL=@url, Scope=@scope WHERE Id=@id", DatabaseManager.DatabaseConnection);
-                cmd.Parameters.AddWithValue("@text", _textBox.Text);
-                cmd.Parameters.AddWithValue("@url", _urlBox.Text);
-                cmd.Parameters.AddWithValue("@scope", (_scopeBox.SelectedValue == "0") ? DBNull.Value : (object)Int32.Parse(_scopeBox.SelectedValue));
-                cmd.Parameters.AddWithValue("@id", _id);
-                cmd.ExecuteNonQuery();
+                using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("UPDATE NavbarLinks SET Text=@text, URL=@url, Scope=@scope WHERE Id=@id"))
+                {
+                    cmd.Parameters.AddWithValue("@text", _textBox.Text);
+                    cmd.Parameters.AddWithValue("@url", _urlBox.Text);
+                    cmd.Parameters.AddWithValue("@scope", (_scopeBox.SelectedValue == "0") ? DBNull.Value : (object)Int32.Parse(_scopeBox.SelectedValue));
+                    cmd.Parameters.AddWithValue("@id", _id);
+                    cmd.ExecuteNonQuery();
+                }
             }
 
             public static NavbarEditRow NewLink(Default page)
             {
-                SqlCommand cmd = new SqlCommand("INSERT INTO NavbarLinks (Text, URL, Scope) OUTPUT INSERTED.Id VALUES ('Example', 'http://www.example.com/', NULL)", DatabaseManager.DatabaseConnection);
-                int id = (int)cmd.ExecuteScalar();
-                cmd = new SqlCommand("SELECT * FROM NavbarLinks WHERE Id=@id", DatabaseManager.DatabaseConnection);
-                cmd.Parameters.AddWithValue("@id", id);
-                using (SqlDataReader r = cmd.ExecuteReader())
+                int id;
+
+                using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("INSERT INTO NavbarLinks (Text, URL, Scope) OUTPUT INSERTED.Id VALUES ('Example', 'http://www.example.com/', NULL)"))
                 {
-                    if (r.Read())
-                        return new NavbarEditRow(r, page);
-                    else
-                        return null;
+                    id = (int)cmd.ExecuteScalar();
+                }
+
+
+                using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("SELECT * FROM NavbarLinks WHERE Id=@id"))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    using (SqlDataReader r = cmd.ExecuteReader())
+                    {
+                        if (r.Read())
+                            return new NavbarEditRow(r, page);
+                        else
+                            return null;
+                    }
                 }
             }
         }

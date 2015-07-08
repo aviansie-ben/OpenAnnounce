@@ -10,7 +10,7 @@ using Announcements.Data;
 
 namespace Announcements.Admin
 {
-    public partial class AnnouncementList : System.Web.UI.Page
+    public partial class AnnouncementList : AnnouncementsPage
     {
         public static readonly Dictionary<string, string> messages = new Dictionary<string, string>()
         {
@@ -42,54 +42,52 @@ namespace Announcements.Admin
             }
         }
 
-        User userInfo;
         Dictionary<int, CheckBox> checkBoxes = new Dictionary<int, CheckBox>();
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            userInfo = new User(User);
-            if (!userInfo.SecurityAccess["CanAccessBackend"])
+            if (!CurrentUser.SecurityAccess["CanAccessBackend"])
             {
                 Response.Redirect("403.aspx", true);
             }
 
-            NewAnnouncement.Visible = userInfo.SecurityAccess["CanSubmitAnnouncement"];
+            NewAnnouncement.Visible = CurrentUser.SecurityAccess["CanSubmitAnnouncement"];
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Request.Params["msg"] != null && messages.ContainsKey(Request.Params["msg"]))
             {
-                Message.Visible = true;
-                Message.Attributes["class"] = "message-base message-success";
-                Message.InnerHtml = messages[Request.Params["msg"]];
+                Main.DisplaySuccessMessage(Message, messages[Request.Params["msg"]]);
             }
 
             PopulateModes();
+
             while (AnnouncementTable.Rows.Count > 1)
             {
                 AnnouncementTable.Rows.RemoveAt(1);
             }
-            Announcement.PopulatePageNumber(userInfo.Profile, CurrentPage, MaxPage, ViewMode.SelectedValue, ViewExpired.Checked, Page, 10);
-            Announcement.PopulateAnnouncementTable(userInfo.Profile, ViewMode.SelectedValue, ViewExpired.Checked, ViewDeleted.Checked, AnnouncementTable, (Page - 1) * 10, 10, checkBoxes);
+
+            Announcement.PopulatePageNumber(DatabaseManager.Current, CurrentUser.Profile, CurrentPage, MaxPage, ViewMode.SelectedValue, ViewExpired.Checked, Page, 10);
+            Announcement.PopulateAnnouncementTable(DatabaseManager.Current, CurrentUser.Profile, ViewMode.SelectedValue, ViewExpired.Checked, ViewDeleted.Checked, AnnouncementTable, (Page - 1) * 10, 10, checkBoxes);
         }
 
         private void PopulateModes()
         {
             if (ViewMode.Items.Count == 0)
             {
-                if (userInfo.SecurityAccess["CanApproveAnnouncement"] && userInfo.SecurityAccess["CanViewAllAnnouncement"])
+                if (CurrentUser.SecurityAccess["CanApproveAnnouncement"] && CurrentUser.SecurityAccess["CanViewAllAnnouncement"])
                     ViewMode.Items.Add(new ListItem("Approval Mode", "Approval"));
-                if (userInfo.SecurityAccess["CanViewAllAnnouncement"])
+                if (CurrentUser.SecurityAccess["CanViewAllAnnouncement"])
                     ViewMode.Items.Add(new ListItem("View All Mode", "ViewAll"));
                 ViewMode.Items.Add(new ListItem("Submission Mode", "Submission"));
                 
             }
             else
             {
-                if (ViewMode.SelectedValue == "ViewAll" && !userInfo.SecurityAccess["CanViewAllAnnouncement"])
+                if (ViewMode.SelectedValue == "ViewAll" && !CurrentUser.SecurityAccess["CanViewAllAnnouncement"])
                     ViewMode.SelectedIndex = 0;
-                else if (ViewMode.SelectedValue == "Approval" && !userInfo.SecurityAccess["CanApproveAnnouncement"])
+                else if (ViewMode.SelectedValue == "Approval" && !CurrentUser.SecurityAccess["CanApproveAnnouncement"])
                     ViewMode.SelectedIndex = 0;
             }
         }
@@ -124,45 +122,42 @@ namespace Announcements.Admin
         protected void DeleteButton_Click(object sender, EventArgs e)
         {
             List<Announcement> toDelete = new List<Announcement>();
+
             foreach (KeyValuePair<int, CheckBox> check in checkBoxes)
             {
                 if (check.Value.Checked)
-                    toDelete.Add(Announcement.FromDatabase(check.Key));
+                    toDelete.Add(Announcement.FromDatabase(DatabaseManager.Current, check.Key));
             }
 
             if (toDelete.Count == 0)
             {
-                Message.Visible = true;
-                Message.Attributes["class"] = "message-base message-error";
-                Message.InnerHtml = "Please select the announcements you would like to delete.";
+                Main.DisplayErrorMessage(Message, "No announcements were selected to delete.");
                 return;
             }
 
-            if (!userInfo.SecurityAccess["CanEditAllAnnouncement"])
+            foreach (Announcement a in toDelete)
             {
-                foreach (Announcement a in toDelete)
+                if (a == null)
                 {
-                    if (a.CreatorId != userInfo.Profile.Id)
-                    {
-                        Message.Visible = true;
-                        Message.Attributes["class"] = "message-base message-error";
-                        Message.InnerHtml = "You cannot delete one or more of the selected announcements.";
-                        return;
-                    }
+                    Main.DisplayErrorMessage(Message, "One or more of the selected announcements has already been deleted.");
+                    return;
+                }
+                else if (!CurrentUser.SecurityAccess["CanEditAllAnnouncement"] && a.CreatorId != CurrentUser.Profile.Id)
+                {
+                    Main.DisplayErrorMessage(Message, "You do not have permission to delete one or more of the selected announcements.");
+                    return;
                 }
             }
 
             foreach (Announcement a in toDelete)
             {
                 a.Status = Announcement.AnnouncementStatus.Deleted;
-                a.StatusUserId = userInfo.Profile.Id;
+                a.StatusUserId = CurrentUser.Profile.Id;
                 a.StatusTime = DateTime.Now;
                 a.Update();
             }
 
-            Message.Visible = true;
-            Message.Attributes["class"] = "message-base message-success";
-            Message.InnerHtml = "All selected announcements have been successfully deleted.";
+            Main.DisplaySuccessMessage(Message, "All selected announcements have been successfully deleted.");
 
             Page_Load(this, new EventArgs());
         }

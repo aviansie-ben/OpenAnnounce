@@ -22,12 +22,16 @@ namespace Announcements
                 },
                 new SanitizerTag()
                 {
+                    TagNames = new List<string> { "s", "strike" }
+                },
+                new SanitizerTag()
+                {
                     TagNames = new List<string> { "a" },
                     AllowedAttributes = new List<string>() { "href", "target" }
                 },
                 new SanitizerTag()
                 {
-                    TagNames = new List<string> { "br", "p" }
+                    TagNames = new List<string> { "br", "hr", "p" }
                 },
                 new SanitizerTag()
                 {
@@ -35,8 +39,12 @@ namespace Announcements
                 },
                 new SanitizerTag()
                 {
-                    TagNames = new List<string> { "blockquote" }
-                }
+                    TagNames = new List<string> { "blockquote", "pre" }
+                },
+                new SanitizerTag()
+                {
+                    TagNames = new List<string> { "h1", "h2", "h3" }
+}
             }
         };
 

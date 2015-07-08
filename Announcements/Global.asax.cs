@@ -60,6 +60,16 @@ namespace Announcements
                 // Reset the database connection
                 Data.DatabaseManager.CloseConnection();
             }
+            else if (ex != null && ex.GetHttpCode() == 503)
+            {
+                // Display the error page and clear the error
+                Response.ClearContent();
+                Server.Execute("~/503.aspx");
+                Server.ClearError();
+
+                // Reset the database connection
+                Data.DatabaseManager.CloseConnection();
+            }
             else if (ex != null && ex.GetHttpCode() == 404)
             {
                 // Display the error page and clear the error

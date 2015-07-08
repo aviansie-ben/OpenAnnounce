@@ -4,23 +4,49 @@
     margin: 0px 10px 5px 10px;
 }
 
-    .infobox-base a
+    .infobox-base a, .cke_editable a
     {
         color: #006c09;
     }
 
-        .infobox-base a:hover
+        .infobox-base a:hover, .cke_editable a:hover
         {
             color: #00b20f;
         }
 
-    .infobox-base h2
+    .infobox-base h1, .cke_editable h1
     {
         margin-right: 20px;
         display: block;
         border-bottom: 1px solid #88b68c;
         font-family: 'Century Schoolbook';
-        font-size: 1.1em;
+        font-size: 1.3em;
+        font-weight: bold;
+    }
+
+    .infobox-base h2, .cke_editable h2
+    {
+        margin-right: 20px;
+        display: block;
+        border-bottom: 1px solid #88b86c;
+        font-family: 'Century Schoolbook';
+        font-size: 1.15em;
+    }
+
+    .infobox-base h3, .cke_editable h3
+    {
+        margin-right: 20px;
+        display: block;
+        font-family: 'Century Schoolbook';
+        font-size: 1.05em;
+    }
+
+    .infobox-base blockquote, .cke_editable blockquote
+    {
+        margin-right: 20px;
+        margin-left: 10px;
+        border-left: 1px solid #88b86c;
+        padding-left: 10px;
     }
 
 .infobox-small-text
@@ -56,13 +82,14 @@
     font-size: 14px;
 }
 
-    .infobox-body p
+.cke_editable
+{
+    font-family: Calibri;
+    font-size: 14px;
+}
+
+    .infobox-body p, .cke_editable p
     {
         margin-top: 9px;
         margin-bottom: 0px;
     }
-
-        .infobox-body p:first-child
-        {
-            margin-top: 2px;
-        }

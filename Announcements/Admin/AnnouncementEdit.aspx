@@ -4,8 +4,19 @@
         <asp:ScriptManager ID="ScriptManager" runat="server" />
         <div id="Message" class="message-base" runat="server" visible="false"></div>
         <ann:Infobox ID="MainInfobox" runat="server" Title="Announcement">
-            <asp:TextBox ID="AnnouncementTitle" runat="server" MaxLength="32" Width="256px" Font-Size="1.2em" /><br />
-            <cke:CKEditorControl ID="AnnouncementBody" runat="server" BasePath="../Scripts/CKEditor" Width="100%" Height="256px"></cke:CKEditorControl>
+            <asp:TextBox ID="AnnouncementTitle" runat="server" MaxLength="32" Width="256px" Font-Size="1.2em" style="margin-bottom: 10px;" />
+            <cke:CKEditorControl ID="AnnouncementBody" runat="server" BasePath="../Scripts/CKEditor" Width="100%" Height="256px"
+                Toolbar="Source
+                Cut|Copy|Paste|PasteText|PasteFromWord|-|Undo|Redo
+                Find|Replace|-|SelectAll
+                Bold|Italic|Strike|-|RemoveFormat
+                NumberedList|BulletedList|-|Blockquote
+                Link|Unlink
+                HorizontalRule|SpecialChar
+                /
+                Format
+                Maximize|ShowBlocks
+                About" ContentsCss="../Style/Infobox.css" RemoveDialogTabs="link:advanced"></cke:CKEditorControl>
             <br />Display from 
             <asp:TextBox ID="StartDate" runat="server" /><ajax:CalendarExtender ID="StartDateCalendar" runat="server" TargetControlID="StartDate" Format="dd/MM/yyyy" /> to 
             <asp:TextBox ID="EndDate" runat="server" /><ajax:CalendarExtender ID="EndDateCalendar" runat="server" TargetControlID="EndDate" Format="dd/MM/yyyy" /> for 
@@ -32,12 +43,12 @@
         </ann:Infobox>
         <ann:Infobox ID="AdminInfobox" runat="server" Title="Administrative Actions">
             <div id="ApproveDeny" runat="server">
-                <h2>Approve/Deny</h2>
+                <h1>Approve/Deny</h1>
                 <asp:LinkButton ID="ApproveLink" CssClass="linkbutton" runat="server" OnClick="ApproveLink_Click">Approve</asp:LinkButton><br />
                 <asp:TextBox ID="DenyReason" runat="server" /><asp:LinkButton ID="DenyLink" CssClass="linkbutton" runat="server" OnClick="DenyLink_Click">Deny</asp:LinkButton>
             </div>
             <div id="HardDelete" runat="server">
-                <h2>Hard Delete</h2>
+                <h1>Hard Delete</h1>
                 <strong>WARNING:</strong> Hard deleting an announcement will prevent it from being undeleted. Please be absolutely sure that you wish to delete this announcement
                 before proceeding.<br /><br />
                 <asp:CheckBox ID="HardDeleteCheck" runat="server" Text="I'm sure that I want to hard delete this announcement" /><br />

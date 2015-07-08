@@ -23,7 +23,7 @@ namespace Announcements.Control
             }
             else
             {
-                CompiledSecurityInfo level = CompiledSecurityInfo.CompileAccessLevel(Page.User);
+                CompiledSecurityInfo level = CompiledSecurityInfo.CompileAccessLevel(DatabaseManager.Current, Page.User);
                 string appPath = Page.Request.ApplicationPath;
 
                 if (appPath == "/")
@@ -41,14 +41,15 @@ namespace Announcements.Control
 
                 scopes = scopes.Remove(scopes.Length - 1);
 
-                SqlCommand cmd = new SqlCommand("SELECT * FROM NavbarLinks WHERE Scope IS NULL OR Scope IN (" + scopes + ")", DatabaseManager.DatabaseConnection);
-
-                using (SqlDataReader r = cmd.ExecuteReader())
+                using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("SELECT * FROM NavbarLinks WHERE Scope IS NULL OR Scope IN (" + scopes + ")"))
                 {
-                    while (r.Read())
+                    using (SqlDataReader r = cmd.ExecuteReader())
                     {
-                        NavbarLink link = new NavbarLink(r);
-                        output.Write("<a href=\"" + link.Url + "\" target=\"_blank\">" + link.Text + "</a>");
+                        while (r.Read())
+                        {
+                            NavbarLink link = new NavbarLink(r);
+                            output.Write("<a href=\"" + link.Url + "\" target=\"_blank\">" + link.Text + "</a>");
+                        }
                     }
                 }
             }

@@ -11,17 +11,15 @@ using Announcements.Data;
 
 namespace Announcements.Admin
 {
-    public partial class ProfileEdit : System.Web.UI.Page
+    public partial class ProfileEdit : AnnouncementsPage
     {
-        User userInfo;
         UserProfile editProfile;
 
         private int id;
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            userInfo = new User(User);
-            if (!userInfo.SecurityAccess["CanAccessBackend"])
+            if (!CurrentUser.SecurityAccess["CanAccessBackend"])
             {
                 Response.Redirect("403.aspx", true);
             }
@@ -30,17 +28,17 @@ namespace Announcements.Admin
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Request.HttpMethod != "POST")
-                ViewState["id"] = (Request.Params["id"] != null) ? Int32.Parse(Request.Params["id"]) : userInfo.Profile.Id;
+                ViewState["id"] = (Request.Params["id"] != null) ? Int32.Parse(Request.Params["id"]) : CurrentUser.Profile.Id;
 
             if (ViewState["id"] == null)
                 Response.Redirect("Default.aspx", true);
             else
                 id = (int)ViewState["id"];
 
-            if (!userInfo.SecurityAccess["CanEditProfiles"] && id != userInfo.Profile.Id)
+            if (!CurrentUser.SecurityAccess["CanEditProfiles"] && id != CurrentUser.Profile.Id)
                 Response.Redirect("Default.aspx", true);
 
-            editProfile = UserProfile.FromDatabase(id);
+            editProfile = UserProfile.FromDatabase(DatabaseManager.Current, id);
             if (editProfile == null)
                 Response.Redirect("Default.aspx", true);
 
@@ -61,7 +59,7 @@ namespace Announcements.Admin
         {
             editProfile.DisplayName = DisplayName.Text;
             editProfile.Update();
-            ShowMessage((editProfile.Id == userInfo.Profile.Id) ? "Your profile has been successfully updated." : "That user's profile has been successfully updated.", "message-success");
+            ShowMessage((editProfile.Id == CurrentUser.Profile.Id) ? "Your profile has been successfully updated." : "That user's profile has been successfully updated.", "message-success");
         }
     }
 }

@@ -22,49 +22,52 @@ namespace Announcements.Control
         protected override void OnLoad(EventArgs e)
         {
             Text = (DescriptionText == null) ? String.Empty : (DescriptionText + "<br />");
-            SqlCommand cmd = new SqlCommand("SELECT * FROM Clubs WHERE Weekday=@weekday AND status=1 ORDER BY Name ASC", DatabaseManager.DatabaseConnection);
-            if (ShowAll)
+
+            using (SqlCommand cmd = DatabaseManager.Current.CreateCommand("SELECT * FROM Clubs WHERE Weekday=@weekday AND status=1 ORDER BY Name ASC"))
             {
-                for (int i = 0; i < 7; i++)
+                if (ShowAll)
                 {
-                    if (cmd.Parameters.Contains("@weekday"))
-                        cmd.Parameters.RemoveAt("@weekday");
-                    cmd.Parameters.AddWithValue("@weekday", i);
+                    for (int i = 0; i < 7; i++)
+                    {
+                        if (cmd.Parameters.Contains("@weekday"))
+                            cmd.Parameters.RemoveAt("@weekday");
+                        cmd.Parameters.AddWithValue("@weekday", i);
+                        using (SqlDataReader r = cmd.ExecuteReader())
+                        {
+                            if (r.HasRows)
+                            {
+                                Text += "<h2>" + dayNames[i] + "</h2><ul>";
+                                while (r.Read())
+                                {
+                                    Club c = new Club(DatabaseManager.Current, r);
+                                    Text += "<li><a href=\"ClubInfo.aspx?id=" + c.Id + "\">" + c.Name + " - " + c.Location + ((c.AfterSchool) ? " (After school)" : "") + "</a></li>";
+                                }
+                                Text += "</ul>";
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    cmd.Parameters.AddWithValue("@weekday", DateTime.Today.DayOfWeek);
+                    Text += "<ul>";
                     using (SqlDataReader r = cmd.ExecuteReader())
                     {
                         if (r.HasRows)
                         {
-                            Text += "<h2>" + dayNames[i] + "</h2><ul>";
                             while (r.Read())
                             {
-                                Club c = new Club(r);
+                                Club c = new Club(DatabaseManager.Current, r);
                                 Text += "<li><a href=\"ClubInfo.aspx?id=" + c.Id + "\">" + c.Name + " - " + c.Location + ((c.AfterSchool) ? " (After school)" : "") + "</a></li>";
                             }
-                            Text += "</ul>";
                         }
-                    }
-                }
-            }
-            else
-            {
-                cmd.Parameters.AddWithValue("@weekday", DateTime.Today.DayOfWeek);
-                Text += "<ul>";
-                using (SqlDataReader r = cmd.ExecuteReader())
-                {
-                    if (r.HasRows)
-                    {
-                        while (r.Read())
+                        else
                         {
-                            Club c = new Club(r);
-                            Text += "<li><a href=\"ClubInfo.aspx?id=" + c.Id + "\">" + c.Name + " - " + c.Location + ((c.AfterSchool) ? " (After school)" : "") + "</a></li>";
+                            Text += "<li><em>No clubs are running today</em></li>";
                         }
                     }
-                    else
-                    {
-                        Text += "<li><em>No clubs are running today</em></li>";
-                    }
+                    Text += "</ul><a href=\"ClubList.aspx\">See all clubs</a>";
                 }
-                Text += "</ul><a href=\"ClubList.aspx\">See all clubs</a>";
             }
         }
     }

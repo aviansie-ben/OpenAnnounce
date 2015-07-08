@@ -7,16 +7,21 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Announcements.Data;
 using System.Data;
+using System.Web.UI.HtmlControls;
 
 namespace Announcements
 {
     public partial class Main : System.Web.UI.MasterPage
     {
         public bool NoDatabase { get; set; }
+        public IsolationLevel Isolation { get; set; }
+
+        public User RequestingUser { get; set; }
 
         public Main()
         {
             NoDatabase = false;
+            Isolation = IsolationLevel.RepeatableRead;
         }
 
         protected void Page_Init(object sender, EventArgs e)
@@ -32,20 +37,40 @@ namespace Announcements
             {
                 try
                 {
-                    if (DatabaseManager.DatabaseConnection != null && (DatabaseManager.DatabaseConnection.State == ConnectionState.Broken || DatabaseManager.DatabaseConnection.State == ConnectionState.Closed))
-                        DatabaseManager.CloseConnection();
-                    if (DatabaseManager.DatabaseConnection == null)
-                        DatabaseManager.OpenConnection(ConfigurationManager.ConnectionStrings["mainDb"].ConnectionString);
+                    DatabaseManager.OpenConnection(ConfigurationManager.ConnectionStrings["mainDb"].ConnectionString, Isolation);
                 }
                 catch (Exception ex)
                 {
-                    Response.ClearContent();
-                    Context.Items["503Exception"] = ex;
-                    Server.Execute("~/503.aspx");
-                    Response.Output.WriteLine("<!-- Error is as follows:\n" + ex.ToString() + " -->");
-                    Response.End();
+                    throw new HttpException(503, "Failed to connect to the database", ex);
                 }
+
+                RequestingUser = new User(DatabaseManager.Current, HttpContext.Current.User);
             }
+        }
+
+        protected void Page_Error(object sender, EventArgs e)
+        {
+            
+        }
+
+        protected void Page_Unload(object sender, EventArgs e)
+        {
+            if (DatabaseManager.Current != null)
+                DatabaseManager.CloseConnection();
+        }
+
+        public static void DisplaySuccessMessage(HtmlGenericControl control, string message)
+        {
+            control.Visible = true;
+            control.Attributes["class"] = "message-base message-success";
+            control.InnerHtml = message;
+        }
+
+        public static void DisplayErrorMessage(HtmlGenericControl control, string message)
+        {
+            control.Visible = true;
+            control.Attributes["class"] = "message-base message-error";
+            control.InnerHtml = message;
         }
     }
 }

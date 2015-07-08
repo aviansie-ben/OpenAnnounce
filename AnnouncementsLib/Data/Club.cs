@@ -10,7 +10,9 @@ namespace Announcements.Data
 {
     public class Club
     {
-        private static string[] weekdays = new string[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+        private static readonly string[] weekdays = new string[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+
+        private DatabaseManager _manager;
 
         private int _id = -1;
         private string _name = "", _description = "", _statusMessage = "";
@@ -31,36 +33,40 @@ namespace Announcements.Data
 
         public string Location { get { return _location; } set { _location = value; } }
         public int TeacherId { get { return _teacher; } set { _teacher = value; } }
-        public string TeacherDisplayName { get { return UserProfile.FromDatabase(_teacher).DisplayName; } }
+        public string TeacherDisplayName { get { return UserProfile.FromDatabase(_manager, _teacher).DisplayName; } }
         public int Weekday { get { return _weekday; } set { _weekday = value; } }
         public bool AfterSchool { get { return _afterSchool; } set { _afterSchool = value; } }
 
         public DateTime CreateTime { get { return _createTime; } set { _createTime = value; } }
         public int CreatorId { get { return _createUser; } set { _createUser = value; } }
-        public string CreatorDisplayName { get { return UserProfile.FromDatabase(_createUser).DisplayName; } }
+        public string CreatorDisplayName { get { return UserProfile.FromDatabase(_manager, _createUser).DisplayName; } }
 
         public DateTime EditTime { get { return _editTime; } set { _editTime = value; } }
         public int EditorId { get { return _editUser; } set { _editUser = value; } }
-        public string EditorDisplayName { get { return UserProfile.FromDatabase(_editUser).DisplayName; } }
+        public string EditorDisplayName { get { return UserProfile.FromDatabase(_manager, _editUser).DisplayName; } }
 
         public DateTime StatusTime { get { return _statusTime; } set { _statusTime = value; } }
         public string StatusMessage { get { return _statusMessage; } set { _statusMessage = value; } }
         public int StatusUserId { get { return _statusUser; } set { _statusUser = value; } }
-        public string StatusUserDisplayName { get { return UserProfile.FromDatabase(_statusUser).DisplayName; } }
+        public string StatusUserDisplayName { get { return UserProfile.FromDatabase(_manager, _statusUser).DisplayName; } }
 
         public ClubStatus Status { get { return (ClubStatus)_status; } set { _status = (int)value; } }
 
-        public Club()
+        public Club(DatabaseManager manager)
         {
+            _manager = manager;
         }
 
-        public Club(int id)
+        public Club(DatabaseManager manager, int id)
         {
+            _manager = manager;
             _id = id;
         }
 
-        public Club(SqlDataReader r)
+        public Club(DatabaseManager manager, SqlDataReader r)
         {
+            _manager = manager;
+
             _id = (int)r["Id"];
             _name = (string)r["Name"];
             _description = (string)r["Description"];
@@ -85,43 +91,48 @@ namespace Announcements.Data
 
         public void Insert()
         {
-            SqlCommand cmd = new SqlCommand("INSERT INTO Clubs (Name, Description, Location, Teacher, Weekday, AfterSchool, CreateTime, CreateUser, EditTime, EditUser, StatusTime, StatusUser, StatusMessage, Status) VALUES (@name, @description, @location, @teacher, @weekday, @afterSchool, @createTime, @createUser, @editTime, @editUser, @statusTime, @statusUser, @statusMessage, @status)", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@name", _name);
-            cmd.Parameters.AddWithValue("@description", _description);
-            cmd.Parameters.AddWithValue("@location", _location);
-            cmd.Parameters.AddWithValue("@teacher", _teacher);
-            cmd.Parameters.AddWithValue("@weekday", _weekday);
-            cmd.Parameters.AddWithValue("@afterSchool", _afterSchool);
-            cmd.Parameters.AddWithValue("@createTime", _createTime);
-            cmd.Parameters.AddWithValue("@createUser", _createUser);
-            cmd.Parameters.AddWithValue("@editTime", _editTime);
-            cmd.Parameters.AddWithValue("@editUser", (_editUser <= 0) ? DBNull.Value : (object)_editUser);
-            cmd.Parameters.AddWithValue("@statusTime", _statusTime);
-            cmd.Parameters.AddWithValue("@statusUser", (_statusUser <= 0) ? DBNull.Value : (object)_statusUser);
-            cmd.Parameters.AddWithValue("@statusMessage", _statusMessage);
-            cmd.Parameters.AddWithValue("@status", _status);
-            cmd.ExecuteNonQuery();
+            using (SqlCommand cmd = _manager.CreateCommand("INSERT INTO Clubs (Name, Description, Location, Teacher, Weekday, AfterSchool, CreateTime, CreateUser, EditTime, EditUser, StatusTime, StatusUser, StatusMessage, Status) VALUES (@name, @description, @location, @teacher, @weekday, @afterSchool, @createTime, @createUser, @editTime, @editUser, @statusTime, @statusUser, @statusMessage, @status)"))
+            {
+                cmd.Parameters.AddWithValue("@name", _name);
+                cmd.Parameters.AddWithValue("@description", _description);
+                cmd.Parameters.AddWithValue("@location", _location);
+                cmd.Parameters.AddWithValue("@teacher", _teacher);
+                cmd.Parameters.AddWithValue("@weekday", _weekday);
+                cmd.Parameters.AddWithValue("@afterSchool", _afterSchool);
+                cmd.Parameters.AddWithValue("@createTime", _createTime);
+                cmd.Parameters.AddWithValue("@createUser", _createUser);
+                cmd.Parameters.AddWithValue("@editTime", _editTime);
+                cmd.Parameters.AddWithValue("@editUser", (_editUser <= 0) ? DBNull.Value : (object)_editUser);
+                cmd.Parameters.AddWithValue("@statusTime", _statusTime);
+                cmd.Parameters.AddWithValue("@statusUser", (_statusUser <= 0) ? DBNull.Value : (object)_statusUser);
+                cmd.Parameters.AddWithValue("@statusMessage", _statusMessage);
+                cmd.Parameters.AddWithValue("@status", _status);
+
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public void Update()
         {
-            SqlCommand cmd = new SqlCommand("UPDATE Clubs SET Name=@name, Description=@description, Location=@location, Teacher=@teacher, Weekday=@weekday, AfterSchool=@afterSchool, CreateTime=@createTime, CreateUser=@createUser, EditTime=@editTime, StatusTime=@statusTime, StatusUser=@statusUser, StatusMessage=@statusMessage, Status=@status WHERE id=@id", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@id", _id);
-            cmd.Parameters.AddWithValue("@name", _name);
-            cmd.Parameters.AddWithValue("@description", _description);
-            cmd.Parameters.AddWithValue("@location", _location);
-            cmd.Parameters.AddWithValue("@teacher", _teacher);
-            cmd.Parameters.AddWithValue("@weekday", _weekday);
-            cmd.Parameters.AddWithValue("@afterSchool", _afterSchool);
-            cmd.Parameters.AddWithValue("@createTime", _createTime);
-            cmd.Parameters.AddWithValue("@createUser", _createUser);
-            cmd.Parameters.AddWithValue("@editTime", _editTime);
-            cmd.Parameters.AddWithValue("@editUser", (_editUser <= 0) ? DBNull.Value : (object)_editUser);
-            cmd.Parameters.AddWithValue("@statusTime", _statusTime);
-            cmd.Parameters.AddWithValue("@statusUser", (_statusUser <= 0) ? DBNull.Value : (object)_statusUser);
-            cmd.Parameters.AddWithValue("@statusMessage", _statusMessage);
-            cmd.Parameters.AddWithValue("@status", _status);
-            cmd.ExecuteNonQuery();
+            using (SqlCommand cmd = _manager.CreateCommand("UPDATE Clubs SET Name=@name, Description=@description, Location=@location, Teacher=@teacher, Weekday=@weekday, AfterSchool=@afterSchool, CreateTime=@createTime, CreateUser=@createUser, EditTime=@editTime, StatusTime=@statusTime, StatusUser=@statusUser, StatusMessage=@statusMessage, Status=@status WHERE id=@id"))
+            {
+                cmd.Parameters.AddWithValue("@id", _id);
+                cmd.Parameters.AddWithValue("@name", _name);
+                cmd.Parameters.AddWithValue("@description", _description);
+                cmd.Parameters.AddWithValue("@location", _location);
+                cmd.Parameters.AddWithValue("@teacher", _teacher);
+                cmd.Parameters.AddWithValue("@weekday", _weekday);
+                cmd.Parameters.AddWithValue("@afterSchool", _afterSchool);
+                cmd.Parameters.AddWithValue("@createTime", _createTime);
+                cmd.Parameters.AddWithValue("@createUser", _createUser);
+                cmd.Parameters.AddWithValue("@editTime", _editTime);
+                cmd.Parameters.AddWithValue("@editUser", (_editUser <= 0) ? DBNull.Value : (object)_editUser);
+                cmd.Parameters.AddWithValue("@statusTime", _statusTime);
+                cmd.Parameters.AddWithValue("@statusUser", (_statusUser <= 0) ? DBNull.Value : (object)_statusUser);
+                cmd.Parameters.AddWithValue("@statusMessage", _statusMessage);
+                cmd.Parameters.AddWithValue("@status", _status);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public string GenerateHtmlInfo()
@@ -131,30 +142,32 @@ namespace Announcements.Data
             text += "<strong>Time:</strong> " + weekdays[_weekday] + " ";
             text += ((_afterSchool) ? "(After School)" : "(At Lunch)") + "<br />";
             text += "<strong>Responsible Teacher:</strong> " + TeacherDisplayName + "<br />";
-            text += "<h2>Description</h2>" + _description;
+            text += "<h1>Description</h1>" + _description;
             return text;
         }
 
-        public static void PopulatePageNumber(UserProfile settings, Label currentPageLabel, Label maxPageLabel, string mode, int currentPage, int numPerPage)
+        public static void PopulatePageNumber(DatabaseManager manager, UserProfile settings, Label currentPageLabel, Label maxPageLabel, string mode, int currentPage, int numPerPage)
         {
-            SqlCommand cmd;
-            if (mode == "ViewAll" || mode == "Approval")
+            using (SqlCommand cmd = manager.CreateCommand())
             {
-                cmd = new SqlCommand("SELECT COUNT(*) FROM Clubs WHERE Status<>3", DatabaseManager.DatabaseConnection);
-            }
-            else
-            {
-                cmd = new SqlCommand("SELECT COUNT(*) FROM Clubs WHERE Status<>3 AND CreateUser=@createUser", DatabaseManager.DatabaseConnection);
-            }
+                if (mode == "ViewAll" || mode == "Approval")
+                {
+                    cmd.CommandText = "SELECT COUNT(*) FROM Clubs WHERE Status<>3";
+                }
+                else
+                {
+                    cmd.CommandText = "SELECT COUNT(*) FROM Clubs WHERE Status<>3 AND CreateUser=@createUser";
+                }
 
-            cmd.Parameters.AddWithValue("@createUser", settings.Id);
-            cmd.Parameters.AddWithValue("@today", DateTime.Today);
+                cmd.Parameters.AddWithValue("@createUser", settings.Id);
+                cmd.Parameters.AddWithValue("@today", DateTime.Today);
 
-            maxPageLabel.Text = Math.Max(1, Math.Ceiling((((int)cmd.ExecuteScalar()) / (double)numPerPage))).ToString();
-            currentPageLabel.Text = currentPage.ToString();
+                maxPageLabel.Text = Math.Max(1, Math.Ceiling((((int)cmd.ExecuteScalar()) / (double)numPerPage))).ToString();
+                currentPageLabel.Text = currentPage.ToString();
+            }
         }
 
-        public static void PopulateClubTable(UserProfile settings, CompiledSecurityInfo level, HtmlTable table, int offset, int rows, Dictionary<int, CheckBox> checkBoxes)
+        public static void PopulateClubTable(DatabaseManager manager, UserProfile settings, CompiledSecurityInfo level, HtmlTable table, int offset, int rows, Dictionary<int, CheckBox> checkBoxes)
         {
             string mode;
 
@@ -165,133 +178,136 @@ namespace Announcements.Data
             else
                 mode = "Submission";
 
-            PopulateClubTable(settings, mode, false, table, offset, rows, checkBoxes);
+            PopulateClubTable(manager, settings, mode, false, table, offset, rows, checkBoxes);
         }
 
-        public static void PopulateClubTable(UserProfile settings, string mode, bool showDeleted, HtmlTable table, int offset, int rows, Dictionary<int, CheckBox> checkBoxes)
+        public static void PopulateClubTable(DatabaseManager manager, UserProfile settings, string mode, bool showDeleted, HtmlTable table, int offset, int rows, Dictionary<int, CheckBox> checkBoxes)
         {
-            SqlCommand cmd;
-
-            if (mode == "ViewAll" || mode == "Approval")
+            using (SqlCommand cmd = manager.CreateCommand())
             {
-                cmd = new SqlCommand("SELECT * FROM Clubs WHERE 1=1", DatabaseManager.DatabaseConnection);
-            }
-            else
-            {
-                cmd = new SqlCommand("SELECT * FROM Clubs WHERE CreateUser=@createUser", DatabaseManager.DatabaseConnection);
-            }
-
-            if (!showDeleted)
-                cmd.CommandText += " AND Status<>3";
-
-            if (mode == "Approval")
-                cmd.CommandText += " ORDER BY (CASE WHEN Status = 0 THEN 1 ELSE 0 END) DESC, ";
-            else if (mode == "Submission")
-                cmd.CommandText += " ORDER BY (CASE WHEN Status = 2 THEN 1 ELSE 0 END) DESC, ";
-            else
-                cmd.CommandText += " ORDER BY ";
-
-            cmd.CommandText += "Name ASC OFFSET " + offset + " ROWS FETCH NEXT " + rows + " ROWS ONLY";
-
-            cmd.Parameters.AddWithValue("@createUser", settings.Id);
-            cmd.Parameters.AddWithValue("@weekday", DateTime.Today.DayOfWeek);
-
-            List<Club> clubs = new List<Club>();
-
-            using (SqlDataReader r = cmd.ExecuteReader())
-            {
-                if (r.HasRows)
+                if (mode == "ViewAll" || mode == "Approval")
                 {
-                    while (r.Read())
-                    {
-                        clubs.Add(new Club(r));
-                    }
+                    cmd.CommandText = "SELECT * FROM Clubs WHERE 1=1";
                 }
                 else
                 {
-                    HtmlTableRow row = new HtmlTableRow();
-                    HtmlTableCell cell;
-                    row.Cells.Add(cell = new HtmlTableCell()
+                    cmd.CommandText = "SELECT * FROM Clubs WHERE CreateUser=@createUser";
+                }
+
+                if (!showDeleted)
+                    cmd.CommandText += " AND Status<>3";
+
+                if (mode == "Approval")
+                    cmd.CommandText += " ORDER BY (CASE WHEN Status = 0 THEN 1 ELSE 0 END) DESC, ";
+                else if (mode == "Submission")
+                    cmd.CommandText += " ORDER BY (CASE WHEN Status = 2 THEN 1 ELSE 0 END) DESC, ";
+                else
+                    cmd.CommandText += " ORDER BY ";
+
+                cmd.CommandText += "Name ASC OFFSET " + offset + " ROWS FETCH NEXT " + rows + " ROWS ONLY";
+
+                cmd.Parameters.AddWithValue("@createUser", settings.Id);
+                cmd.Parameters.AddWithValue("@weekday", DateTime.Today.DayOfWeek);
+
+                List<Club> clubs = new List<Club>();
+
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    if (r.HasRows)
                     {
-                        ColSpan = 5,
-                        InnerHtml = "<em>There are currently no clubs requiring attention</em>",
-                    });
-                    cell.Style.Add("padding-left", "5px");
+                        while (r.Read())
+                        {
+                            clubs.Add(new Club(manager, r));
+                        }
+                    }
+                    else
+                    {
+                        HtmlTableRow row = new HtmlTableRow();
+                        HtmlTableCell cell;
+                        row.Cells.Add(cell = new HtmlTableCell()
+                        {
+                            ColSpan = 5,
+                            InnerHtml = "<em>There are currently no clubs requiring attention</em>",
+                        });
+                        cell.Style.Add("padding-left", "5px");
+                        table.Rows.Add(row);
+                    }
+                }
+
+                foreach (Club c in clubs)
+                {
+                    HtmlTableRow row = new HtmlTableRow();
+
+                    if (c.Status == ClubStatus.Deleted)
+                    {
+                        row.Style.Add("background", "#f3f3f3");
+                    }
+                    else if (mode == "Approval" && c.Status == Club.ClubStatus.Pending)
+                    {
+                        row.Style.Add("background", "#ffa4a4");
+                    }
+                    else if (mode == "Submission" && c.Status == Club.ClubStatus.Denied)
+                    {
+                        row.Style.Add("background", "#ffa4a4");
+                    }
+
+                    HtmlTableCell checkCell;
+                    CheckBox chk;
+
+                    if (checkBoxes != null)
+                    {
+                        row.Cells.Add(checkCell = new HtmlTableCell());
+                        checkCell.Style.Add("text-align", "center");
+                        checkCell.Controls.Add(chk = new CheckBox()
+                        {
+                            ID = "chk_club_" + c.Id
+                        });
+                        if (checkBoxes.ContainsKey(c.Id))
+                            checkBoxes[c.Id] = chk;
+                        else
+                            checkBoxes.Add(c.Id, chk);
+                    }
+                    row.Cells.Add(new HtmlTableCell() { InnerHtml = c.Name });
+                    row.Cells.Add(new HtmlTableCell() { InnerHtml = c.CreatorDisplayName });
+                    row.Cells.Add(new HtmlTableCell() { InnerHtml = weekdays[c.Weekday] });
+                    switch (c.Status)
+                    {
+                        case Club.ClubStatus.Pending:
+                            row.Cells.Add(new HtmlTableCell() { InnerHtml = "Pending" });
+                            break;
+                        case Club.ClubStatus.Approved:
+                            row.Cells.Add(new HtmlTableCell() { InnerHtml = "Approved" });
+                            break;
+                        case Club.ClubStatus.Denied:
+                            row.Cells.Add(new HtmlTableCell() { InnerHtml = "Denied" });
+                            break;
+                        case Club.ClubStatus.Deleted:
+                            row.Cells.Add(new HtmlTableCell() { InnerHtml = "Deleted" });
+                            break;
+                        default:
+                            row.Cells.Add(new HtmlTableCell() { InnerHtml = "(Unknown)" });
+                            break;
+                    }
+                    row.Cells.Add(new HtmlTableCell() { InnerHtml = "<a href=\"ClubEdit.aspx?id=" + c.Id + "\" class=\"linkbutton-small\" style=\"padding-left: 8px; padding-right: 8px;\">Edit</a>" });
+
                     table.Rows.Add(row);
                 }
             }
-
-            foreach (Club c in clubs)
-            {
-                HtmlTableRow row = new HtmlTableRow();
-
-                if (c.Status == ClubStatus.Deleted)
-                {
-                    row.Style.Add("background", "#f3f3f3");
-                }
-                else if (mode == "Approval" && c.Status == Club.ClubStatus.Pending)
-                {
-                    row.Style.Add("background", "#ffa4a4");
-                }
-                else if (mode == "Submission" && c.Status == Club.ClubStatus.Denied)
-                {
-                    row.Style.Add("background", "#ffa4a4");
-                }
-
-                HtmlTableCell checkCell;
-                CheckBox chk;
-
-                if (checkBoxes != null)
-                {
-                    row.Cells.Add(checkCell = new HtmlTableCell());
-                    checkCell.Style.Add("text-align", "center");
-                    checkCell.Controls.Add(chk = new CheckBox()
-                    {
-                        ID = "chk_club_" + c.Id
-                    });
-                    if (checkBoxes.ContainsKey(c.Id))
-                        checkBoxes[c.Id] = chk;
-                    else
-                        checkBoxes.Add(c.Id, chk);
-                }
-                row.Cells.Add(new HtmlTableCell() { InnerHtml = c.Name });
-                row.Cells.Add(new HtmlTableCell() { InnerHtml = c.CreatorDisplayName });
-                row.Cells.Add(new HtmlTableCell() { InnerHtml = weekdays[c.Weekday] });
-                switch (c.Status)
-                {
-                    case Club.ClubStatus.Pending:
-                        row.Cells.Add(new HtmlTableCell() { InnerHtml = "Pending" });
-                        break;
-                    case Club.ClubStatus.Approved:
-                        row.Cells.Add(new HtmlTableCell() { InnerHtml = "Approved" });
-                        break;
-                    case Club.ClubStatus.Denied:
-                        row.Cells.Add(new HtmlTableCell() { InnerHtml = "Denied" });
-                        break;
-                    case Club.ClubStatus.Deleted:
-                        row.Cells.Add(new HtmlTableCell() { InnerHtml = "Deleted" });
-                        break;
-                    default:
-                        row.Cells.Add(new HtmlTableCell() { InnerHtml = "(Unknown)" });
-                        break;
-                }
-                row.Cells.Add(new HtmlTableCell() { InnerHtml = "<a href=\"ClubEdit.aspx?id=" + c.Id + "\" class=\"linkbutton-small\" style=\"padding-left: 8px; padding-right: 8px;\">Edit</a>" });
-
-                table.Rows.Add(row);
-            }
         }
 
-        public static Club FromDatabase(int id)
+        public static Club FromDatabase(DatabaseManager manager, int id)
         {
-            SqlCommand cmd = new SqlCommand("SELECT * FROM Clubs WHERE Id=@id", DatabaseManager.DatabaseConnection);
-            cmd.Parameters.AddWithValue("@id", id);
-
-            using (SqlDataReader r = cmd.ExecuteReader())
+            using (SqlCommand cmd = manager.CreateCommand("SELECT * FROM Clubs WHERE Id=@id"))
             {
-                if (r.Read())
-                    return new Club(r);
-                else
-                    return null;
+                cmd.Parameters.AddWithValue("@id", id);
+
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    if (r.Read())
+                        return new Club(manager, r);
+                    else
+                        return null;
+                }
             }
         }
 
