@@ -1,5 +1,5 @@
-﻿<%@ Page Title="Centennial Daily Bulletin - Edit Club" Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="ClubEdit.aspx.cs" Inherits="Announcements.Admin.ClubEdit" ValidateRequest="false" %>
-
+﻿<%@ Page Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="ClubEdit.aspx.cs" Inherits="Announcements.Admin.ClubEdit" ValidateRequest="false" %>
+<asp:Content ID="TitleSuffix" runat="server" ContentPlaceHolderID="titlesuffix"> - Edit Club</asp:Content>
 <asp:Content ID="Content1" ContentPlaceHolderID="content" runat="server">
     <form id="aspnetForm" runat="server">
         <asp:ScriptManager ID="ScriptManager" runat="server" />

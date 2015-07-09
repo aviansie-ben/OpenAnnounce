@@ -1,4 +1,5 @@
-﻿<%@ Page Title="Centennial Daily Bulletin - Internal Server Error" Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="500.aspx.cs" Inherits="Announcements._500" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="500.aspx.cs" Inherits="Announcements._500" %>
+<asp:Content ID="TitleSuffix" runat="server" ContentPlaceHolderID="titlesuffix"> - Internal Server Error</asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="content" runat="server">
     <form id="form1" runat="server">
     <ann:Infobox runat="server" Title="Error 500 - Internal Server Error" ID="ErrorBox">

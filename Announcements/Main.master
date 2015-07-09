@@ -4,7 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title></title>
+    <title><%#Announcements.Config.Title%><asp:ContentPlaceHolder ID="titlesuffix" runat="server"></asp:ContentPlaceHolder></title>
     <link type="text/css" rel="stylesheet" href="Style/Main.css" />
     <link type="text/css" rel="stylesheet" href="Style/Infobox.css" />
     <link type="text/css" rel="stylesheet" href="Style/Message.css" />
@@ -15,7 +15,7 @@
 <body>
     <div class="main-container">
         <div class="header">
-            <h1>Centennial Daily Bulletin</h1>
+            <h1><%#Announcements.Config.Title%></h1>
         </div>
         <ann:Navbar ID="HeadNavbar" runat="server" />
         <div class="content">

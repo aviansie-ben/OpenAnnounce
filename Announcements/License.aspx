@@ -1,4 +1,5 @@
-﻿<%@ Page Title="Centennial Daily Bulletin - Home" Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="License.aspx.cs" Inherits="Announcements.License" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="License.aspx.cs" Inherits="Announcements.License" %>
+<asp:Content ID="TitleSuffix" runat="server" ContentPlaceHolderID="titlesuffix"> - License Information</asp:Content>
 <asp:Content ID="Content1" runat="server" ContentPlaceHolderID="content">
     <ann:Infobox runat="server" Title="Announcement System Licensing">
         <img style="display: inline-block; float: right; margin: 5px" src="Images/agpl.png" alt="GNU Affero GPL version 3" />

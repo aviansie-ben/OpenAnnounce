@@ -1,4 +1,5 @@
-﻿<%@ Page Title="Centennial Daily Bulletin - Edit Announcement" Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="AnnouncementEdit.aspx.cs" Inherits="Announcements.Admin.AnnouncementEdit" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="AnnouncementEdit.aspx.cs" Inherits="Announcements.Admin.AnnouncementEdit" %>
+<asp:Content ID="TitleSuffix" runat="server" ContentPlaceHolderID="titlesuffix"> - Edit Announcement</asp:Content>
 <asp:Content ID="Content1" ContentPlaceHolderID="content" runat="server">
     <form runat="server">
         <asp:ScriptManager ID="ScriptManager" runat="server" />

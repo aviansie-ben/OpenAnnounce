@@ -1,5 +1,5 @@
-﻿<%@ Page Title="Centennial Daily Bulletin - Edit Profile" Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="ProfileEdit.aspx.cs" Inherits="Announcements.Admin.ProfileEdit" %>
-
+﻿<%@ Page Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="ProfileEdit.aspx.cs" Inherits="Announcements.Admin.ProfileEdit" %>
+<asp:Content ID="TitleSuffix" runat="server" ContentPlaceHolderID="titlesuffix"> - Edit Profile</asp:Content>
 <asp:Content ID="Content1" runat="server" contentplaceholderid="content">
     <div id="Message" class="message-base" runat="server" visible="false"></div>
     <form runat="server">

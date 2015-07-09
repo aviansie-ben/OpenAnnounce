@@ -1,4 +1,5 @@
-﻿<%@ Page Title="Centennial Daily Bulletin - Admin" Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="ClubList.aspx.cs" Inherits="Announcements.Admin.ClubList" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/Main.master" AutoEventWireup="true" CodeBehind="ClubList.aspx.cs" Inherits="Announcements.Admin.ClubList" %>
+<asp:Content ID="TitleSuffix" runat="server" ContentPlaceHolderID="titlesuffix"> - Admin Panel</asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="content" runat="server">
     <div id="Message" class="message-base message-success" runat="server" visible="false"></div>
     <ann:Infobox ID="Clubs" runat="server" Title="All Clubs">

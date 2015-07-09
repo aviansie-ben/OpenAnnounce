@@ -48,6 +48,11 @@ namespace Announcements
             }
         }
 
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            this.DataBind();
+        }
+
         protected void Page_Error(object sender, EventArgs e)
         {
             
