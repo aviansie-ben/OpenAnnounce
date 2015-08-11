@@ -10,6 +10,7 @@ namespace OpenAnnounce
     public static class Config
     {
         public static string Title { get { return ConfigurationManager.AppSettings["PageTitle"]; } }
+        public static string FrontPageNotice { get { return ConfigurationManager.AppSettings["FrontPageNotice"]; } }
 
         public static Assembly WebAssembly { get { return Assembly.GetExecutingAssembly(); } }
     }
