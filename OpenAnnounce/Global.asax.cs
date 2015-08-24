@@ -26,7 +26,7 @@ namespace OpenAnnounce
 
         protected void Application_Start(object sender, EventArgs e)
         {
-            Data.SecurityInfo.RegisterPermissions(new List<string>() { "CanAccessBackend", "CanEditNavbar", "CanSetPermissions", "CanEditProfiles", "CanEditCafeteriaMenu" });
+            Data.SecurityInfo.RegisterPermissions(new List<string>() { "CanAccessBackend", "CanEditNavbar", "CanSetPermissions", "CanEditProfiles" });
             Data.SecurityInfo.RegisterPermissions(new List<string>() { "CanSubmitAnnouncement", "CanViewAllAnnouncement", "CanEditAllAnnouncement", "CanAdvancedEditAnnouncement", "CanApproveAnnouncement", "CanHardDeleteAnnouncement" });
             Data.SecurityInfo.RegisterPermissions(new List<string>() { "CanSubmitClub", "CanViewAllClub", "CanEditAllClub", "CanApproveClub", "CanHardDeleteClub" });
         }

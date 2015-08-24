@@ -69,7 +69,7 @@ namespace OpenAnnounce.Data
             Id = (int)r["Id"];
             Domain = (string)r["Domain"];
             Name = (string)r["PrincipalName"];
-            IsUser = (bool)r["CanAccessBackend"];
+            IsUser = (bool)r["IsUser"];
 
             Permissions = new Dictionary<string, bool>();
             foreach (string permission in registeredPermissions)

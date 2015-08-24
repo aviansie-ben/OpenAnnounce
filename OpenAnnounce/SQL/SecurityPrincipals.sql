@@ -16,8 +16,7 @@
     [CanHardDeleteClub]           BIT          CONSTRAINT [DF_SecurityPrincipals_CanHardDeleteClub] DEFAULT ((0)) NOT NULL,
     [CanEditNavbar]               BIT          CONSTRAINT [DF_SecurityPrincipals_CanEditNavbar] DEFAULT ((0)) NOT NULL,
     [CanSetPermissions]           BIT          CONSTRAINT [DF_SecurityPrincipals_CanSetPermissions] DEFAULT ((0)) NOT NULL,
-    [CanEditProfiles]             BIT          NOT NULL,
-    [CanEditCafeteriaMenu]        BIT          NOT NULL,
+    [CanEditProfiles]             BIT          CONSTRAINT [DF_SecurityPrincipals_CanEditProfiles] DEFAULT ((0)) NOT NULL,
     [IsUser]                      BIT          CONSTRAINT [DF_SecurityPrincipals_IsUser] DEFAULT ((0)) NOT NULL,
     CONSTRAINT [PK_SecurityPrincipals] PRIMARY KEY CLUSTERED ([Id] ASC)
 );
