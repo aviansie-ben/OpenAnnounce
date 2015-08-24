@@ -30,7 +30,7 @@ For now, the scopes and security principles need to be created manually in the d
 
 A security principal is a group or user in active directory which can be granted permissions to perform certain actions through the web interface and can be attached to a scope. (more on scopes in a bit)
 
-You will require a row in the `SecurityPrincipals` table for each user or group that you want to directly work with. Set the Domain to the NetBIOS name of the Active Directory domain, the PrincipalName to the login name of the user or the name of the group, and if the entry refers to a user, set the IsUser value to 1. Assign any permissions that you want to by setting their column value to 1. (see [doc/permissions.md](doc/permissions.md) for information about the various permissions)
+You will require a row in the `SecurityPrincipals` table for each user or group that you want to directly work with. Set the Domain to the NetBIOS name of the Active Directory domain, the PrincipalName to the login name of the user or the name of the group, and if the entry refers to a user, set the IsUser value to 1. Assign any permissions that you want to by setting their column value to 1. (see [doc/permissions.md](permissions.md) for information about the various permissions)
 
 A scope defines the visibility of an item, determining which users it is shown to. A scope might be for example "Students Only" or "Staff Only". Note that an "Everybody" scope will always exist and will cover even those users who do not fall into any of the given security principals.
 
